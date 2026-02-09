@@ -178,6 +178,11 @@ const App: React.FC = () => {
                 </div>
               ))}
             </div>
+            
+            {/* Version Indicator */}
+            <div className="mt-16 text-xs text-gray-300">
+               v1.1 (4-Field Layout)
+            </div>
           </div>
         )}
 
