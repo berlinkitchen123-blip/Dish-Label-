@@ -1,9 +1,12 @@
 export interface LabelData {
   id: string;
-  header: string; // e.g., "ADD-ON" or Dish Letter
-  content: string; // e.g., "Lebneh mezze"
-  footer: string; // e.g., "User Name"
-  subFooter: string; // e.g., "BELLABONA"
+  customerName: string; // "Harsh" -> Styled H
+  dishLetter: string;   // "A"
+  dishType: string;     // "Starter"
+  dishName: string;     // "Soup"
+  allergens: string;    // "Gluten"
+  brand: string;        // "BELLABONA"
+  quantity: number;
 }
 
 export interface RawJsonItem {
@@ -11,10 +14,12 @@ export interface RawJsonItem {
 }
 
 export interface FieldMapping {
-  header: string;
-  content: string;
-  footer: string;
-  subFooter: string;
+  customerName: string;
+  dishLetter: string;
+  dishType: string;
+  dishName: string;
+  allergens: string;
+  brand: string;
 }
 
 export type MappingKey = keyof FieldMapping;

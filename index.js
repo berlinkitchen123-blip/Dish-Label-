@@ -43,46 +43,106 @@ const createPDFDoc = (data) => {
     const x = startX + (colIndex * (boxWidth + horizontalGap));
     const y = startY + (rowIndex * (boxHeight + verticalGap));
 
-    // --- Draw Box ---
-    doc.setDrawColor(200, 200, 200); // Light gray border
-    doc.setLineWidth(0.2);
+    // --- Draw Box Border ---
+    doc.setDrawColor(200, 200, 200); 
+    doc.setLineWidth(0.1);
     doc.roundedRect(x, y, boxWidth, boxHeight, cornerRadius, cornerRadius, "S");
 
-    // --- 1. Header (Dish Letter) ---
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(23, 64, 52); // Dark Green
-    const headerText = (item.header || "").toUpperCase();
-    doc.text(headerText, x + (boxWidth / 2), y + 7, { align: "center" });
+    const centerX = x + (boxWidth / 2);
 
-    // --- 2. Content (Dish Name) ---
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10); // Slightly smaller to accommodate more fields
-    doc.setTextColor(60, 60, 60); // Dark Gray
+    // ==========================================
+    // 1. Customer Name (Top Center, First Letter Double Size)
+    // ==========================================
+    const customerName = (item.customerName || "").toUpperCase();
     
-    // Handle text wrapping
-    const contentLines = doc.splitTextToSize(item.content || "", boxWidth - 4);
-    // Limit to 2 lines to ensure space for footer and sub-footer
-    const maxLines = 2; 
+    if (customerName) {
+        const firstChar = customerName.charAt(0);
+        const rest = customerName.slice(1);
+
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(23, 64, 52); // Brand Green
+
+        // Calculate total width to center the combined text
+        doc.setFontSize(24); // Double size
+        const w1 = doc.getTextWidth(firstChar);
+
+        doc.setFontSize(12); // Regular size
+        const w2 = doc.getTextWidth(rest);
+
+        const totalWidth = w1 + w2;
+        const textStartX = centerX - (totalWidth / 2);
+
+        // Draw First Char
+        doc.setFontSize(24);
+        doc.text(firstChar, textStartX, y + 9);
+
+        // Draw Rest
+        doc.setFontSize(12);
+        doc.text(rest, textStartX + w1, y + 9);
+    } else {
+        // Fallback for empty name
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(23, 64, 52); 
+        doc.setFontSize(14);
+        doc.text("CUSTOMER", centerX, y + 9, { align: "center" });
+    }
+
+    // ==========================================
+    // 2. Dish Name (Below Name)
+    // ==========================================
+    const dishName = item.dishName || "";
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0); // Black
+    
+    const contentLines = doc.splitTextToSize(dishName, boxWidth - 6);
+    const maxLines = 2;
     const displayLines = contentLines.length > maxLines ? contentLines.slice(0, maxLines) : contentLines;
     
-    // Position: Middle section (shifted up slightly)
-    doc.text(displayLines, x + (boxWidth / 2), y + 16, { align: "center" });
+    doc.text(displayLines, centerX, y + 14, { align: "center" });
 
-    // --- 3. Footer (User Name) ---
+    // ==========================================
+    // 3. Dish Letter (Round Circle)
+    // ==========================================
+    const dishLetter = (item.dishLetter || "A").toUpperCase();
+    
+    const circleY = y + 24;
+    const circleRadius = 4;
+    
+    // Draw Circle
+    doc.setDrawColor(23, 64, 52); // Brand Green Border
+    doc.setLineWidth(0.4);
+    doc.circle(centerX, circleY, circleRadius, "S"); // S = Stroke
+
+    // Draw Letter
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.setTextColor(230, 126, 140); // Pink
-    const footerText = (item.footer || "").toUpperCase();
-    doc.text(footerText, x + (boxWidth / 2), y + 29, { align: "center" });
+    doc.setFontSize(13);
+    doc.setTextColor(23, 64, 52);
+    // Offset Y slightly for vertical centering in PDF
+    doc.text(dishLetter, centerX, circleY + 1.5, { align: "center", baseline: "bottom" });
 
-    // --- 4. Sub-Footer (Company Name) ---
-    doc.setFont("helvetica", "bold"); 
-    doc.setFontSize(8);
+    // ==========================================
+    // 4. Allergens (Small, Bottom)
+    // ==========================================
+    const allergens = (item.allergens || "").toUpperCase();
+    if (allergens) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6);
+      doc.setTextColor(230, 126, 140); // Pink
+      doc.text(allergens, centerX, y + 32, { align: "center" });
+    }
+
+    // ==========================================
+    // 5. Restaurant (Footer)
+    // ==========================================
+    const brandText = (item.brand || "RESTAURANT").toUpperCase();
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
     doc.setTextColor(100, 100, 100); // Gray
-    const subFooterText = (item.subFooter || "").toUpperCase();
-    // Position: Very bottom of box
-    doc.text(subFooterText, x + (boxWidth / 2), y + 36, { align: "center" });
+    doc.text(brandText, centerX, y + 36, { align: "center" });
+
   });
 
   return doc;
@@ -98,7 +158,24 @@ const printPDF = (data) => {
   doc.autoPrint(); 
   const blob = doc.output("blob");
   const url = URL.createObjectURL(blob);
-  window.open(url, '_blank');
+  
+  // Direct Print via Iframe
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.width = '1px';
+  iframe.style.height = '1px';
+  iframe.style.left = '-10000px';
+  iframe.src = url;
+  
+  document.body.appendChild(iframe);
+  
+  iframe.onload = () => {
+    setTimeout(() => {
+        try {
+            iframe.contentWindow?.print();
+        } catch (e) { console.error(e); }
+    }, 500);
+  };
 };
 
 // ----------------------------------------------------------------------
@@ -189,6 +266,12 @@ const FileUpload = ({ onDataLoaded }) => {
 
 // -- LabelPreview Component --
 const LabelPreview = ({ data, scale = 1 }) => {
+  const rawName = (data.customerName || "").toUpperCase();
+  const firstChar = rawName.charAt(0);
+  const restOfName = rawName.slice(1);
+  const dishLetter = (data.dishLetter || "A").toUpperCase();
+  const brandText = (data.brand || "RESTAURANT").toUpperCase();
+
   return (
     <div 
       className="flex flex-col items-center mx-auto"
@@ -202,19 +285,30 @@ const LabelPreview = ({ data, scale = 1 }) => {
         className="w-full bg-white rounded border border-gray-300 shadow-sm flex flex-col items-center p-2 relative"
         style={{ height: '145px' }} 
       >
-        <h3 className="text-xl font-bold text-brand-green uppercase tracking-wide text-center leading-tight mt-1 mb-2">
-          {data.header || "HEADER"}
-        </h3>
+        <div className="w-full flex justify-center items-baseline mt-2 mb-1">
+            <span className="text-brand-green font-extrabold text-4xl leading-none uppercase tracking-tight">{firstChar}</span>
+            <span className="text-brand-green font-extrabold text-xl leading-none uppercase tracking-tight">{restOfName}</span>
+        </div>
+        
         <div className="flex-grow flex items-center justify-center w-full mb-1">
           <p className="text-gray-800 text-center text-lg leading-tight px-1 line-clamp-2">
-            {data.content || "Dish Name"}
+            {data.dishName || "Dish Name"}
           </p>
         </div>
-        <div className="text-brand-pink font-bold uppercase tracking-wider text-sm mb-1 text-center w-full px-1 truncate">
-          {data.footer || "User Name"}
+        
+        <div className="flex-grow flex flex-col justify-center items-center mb-1">
+            <div className="w-8 h-8 rounded-full border-2 border-brand-green flex items-center justify-center bg-brand-green/5">
+                <span className="text-brand-green font-bold text-lg leading-none">{dishLetter}</span>
+            </div>
+            {data.dishType && <span className="text-[10px] text-gray-400 font-semibold uppercase mt-0.5">{data.dishType}</span>}
         </div>
-        <div className="text-gray-500 font-bold uppercase tracking-wider text-xs text-center w-full px-1 truncate">
-          {data.subFooter || "Company Name"}
+        
+        {data.allergens && (
+             <div className="w-full text-center mb-0.5"><p className="text-brand-pink font-bold uppercase text-[9px] truncate px-2">{data.allergens}</p></div>
+        )}
+
+        <div className="w-full text-center border-t border-dashed border-gray-100 pt-1">
+          <p className="text-gray-500 font-bold uppercase text-[9px] tracking-wide truncate">{brandText}</p>
         </div>
       </div>
     </div>
@@ -225,9 +319,9 @@ const LabelPreview = ({ data, scale = 1 }) => {
 const App = () => {
   const [rawData, setRawData] = useState([]);
   const [mappedData, setMappedData] = useState([]);
-  const [mapping, setMapping] = useState({ header: '', content: '', footer: '', subFooter: '' });
+  const [mapping, setMapping] = useState({ customerName: '', dishLetter: '', dishType: '', dishName: '', allergens: '', brand: '' });
   const [keys, setKeys] = useState([]);
-  const [step, setStep] = useState(1); // 1: Input, 2: Map, 3: Preview
+  const [step, setStep] = useState(1); 
 
   // Helper to flatten the nested specific JSON structure provided by user
   const preprocessNestedData = (data) => {
@@ -245,6 +339,8 @@ const App = () => {
             box.dishes.forEach((dish) => {
               const dishName = dish.name || "";
               const dishLabel = dish.label || "";
+              const recipeType = dish.recipeType || "";
+              const allergens = dish.allergens ? (Array.isArray(dish.allergens) ? dish.allergens.join(", ") : dish.allergens) : "";
               
               if (dish.users && Array.isArray(dish.users) && dish.users.length > 0) {
                 dish.users.forEach((user) => {
@@ -253,21 +349,25 @@ const App = () => {
                   
                   for (let i = 0; i < qty; i++) {
                     flatList.push({
+                      "Customer Name": userName,
                       "Dish Letter": dishLabel,
+                      "Dish Type": recipeType,
                       "Dish Name": dishName,
-                      "Restaurant Name": footerName,
-                      "User Name": userName,
-                      "Restaurant & User": userName ? `${userName} - ${footerName}` : footerName
+                      "Allergens": allergens,
+                      "Restaurant": footerName,
+                      _initialQty: 1
                     });
                   }
                 });
               } else {
                 flatList.push({
+                  "Customer Name": "",
                   "Dish Letter": dishLabel,
+                  "Dish Type": recipeType,
                   "Dish Name": dishName,
-                  "Restaurant Name": footerName,
-                  "User Name": "",
-                  "Restaurant & User": footerName
+                  "Allergens": allergens,
+                  "Restaurant": footerName,
+                  _initialQty: 1
                 });
               }
             });
@@ -286,19 +386,16 @@ const App = () => {
     setRawData(processedData);
 
     if (processedData.length > 0) {
-      const availableKeys = Object.keys(processedData[0]);
+      const availableKeys = Object.keys(processedData[0]).filter(k => k !== '_initialQty');
       setKeys(availableKeys);
       
       const newMapping = {
-        header: availableKeys.find(k => k.toLowerCase().includes('letter') || k.toLowerCase().includes('addon')) || availableKeys[0] || '',
-        content: availableKeys.find(k => k.toLowerCase().includes('dish name') || k.toLowerCase().includes('item') || k.toLowerCase().includes('content')) || availableKeys[1] || '',
-        footer: availableKeys.find(k => k.toLowerCase().includes('user name')) || 
-                availableKeys.find(k => k.toLowerCase().includes('name') && !k.toLowerCase().includes('dish') && !k.toLowerCase().includes('rest')) || 
-                availableKeys[2] || '',
-        subFooter: availableKeys.find(k => k.toLowerCase().includes('restaurant name')) ||
-                   availableKeys.find(k => k.toLowerCase().includes('company')) ||
-                   availableKeys.find(k => k.toLowerCase().includes('delivery')) || 
-                   availableKeys[3] || ''
+        customerName: availableKeys.find(k => /customer|user/.test(k.toLowerCase())) || '',
+        dishLetter: availableKeys.find(k => /letter|code|label/.test(k.toLowerCase())) || '',
+        dishType: availableKeys.find(k => /type|recipe/.test(k.toLowerCase())) || '',
+        dishName: availableKeys.find(k => /dish|name/.test(k.toLowerCase())) || availableKeys[0] || '',
+        allergens: availableKeys.find(k => /allergen/.test(k.toLowerCase())) || '',
+        brand: availableKeys.find(k => /brand|restaurant/.test(k.toLowerCase())) || ''
       };
       setMapping(newMapping);
       setStep(2);
@@ -310,10 +407,13 @@ const App = () => {
     
     const transformed = rawData.map((item, idx) => ({
       id: `label-${idx}`,
-      header: item[mapping.header] ? String(item[mapping.header]) : '',
-      content: item[mapping.content] ? String(item[mapping.content]) : '',
-      footer: item[mapping.footer] ? String(item[mapping.footer]) : '',
-      subFooter: item[mapping.subFooter] ? String(item[mapping.subFooter]) : '',
+      customerName: item[mapping.customerName] ? String(item[mapping.customerName]) : '',
+      dishLetter: item[mapping.dishLetter] ? String(item[mapping.dishLetter]) : '',
+      dishType: item[mapping.dishType] ? String(item[mapping.dishType]) : '',
+      dishName: item[mapping.dishName] ? String(item[mapping.dishName]) : '',
+      allergens: item[mapping.allergens] ? String(item[mapping.allergens]) : '',
+      brand: item[mapping.brand] ? String(item[mapping.brand]) : 'BELLABONA',
+      quantity: item._initialQty || item.quantity || 1
     }));
     setMappedData(transformed);
   }, [rawData, mapping]);
@@ -383,7 +483,7 @@ const App = () => {
               ))}
             </div>
              <div className="mt-16 text-xs text-gray-300">
-               v1.3 (JS Fixed)
+               v1.4 (Direct Print Update)
             </div>
           </div>
         )}
@@ -402,67 +502,22 @@ const App = () => {
                        <LabelPreview 
                           data={{ 
                             id: 'demo', 
-                            header: mapping.header ? (rawData[0][mapping.header] || 'Header') : 'Header', 
-                            content: mapping.content ? (rawData[0][mapping.content] || 'Content') : 'Content', 
-                            footer: mapping.footer ? (rawData[0][mapping.footer] || 'Footer') : 'Footer',
-                            subFooter: mapping.subFooter ? (rawData[0][mapping.subFooter] || 'SubFooter') : 'SubFooter'
+                            customerName: mapping.customerName ? (rawData[0][mapping.customerName] || 'Harsh') : 'Harsh', 
+                            dishLetter: mapping.dishLetter ? (rawData[0][mapping.dishLetter] || 'A') : 'A', 
+                            dishType: mapping.dishType ? (rawData[0][mapping.dishType] || 'Starter') : 'Starter', 
+                            dishName: mapping.dishName ? (rawData[0][mapping.dishName] || 'Tomato Soup') : 'Tomato Soup', 
+                            allergens: mapping.allergens ? (rawData[0][mapping.allergens] || 'Gluten') : 'Gluten', 
+                            brand: mapping.brand ? (rawData[0][mapping.brand] || 'BELLABONA') : 'BELLABONA',
+                            quantity: 1
                           }} 
                         />
                     </div>
                  </div>
 
                  <div className="space-y-4">
-                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                     <div>
-                       <label className="block text-sm font-medium text-brand-green mb-1 uppercase tracking-wide">1. Header (Top)</label>
-                       <p className="text-xs text-gray-500 mb-2">e.g. Dish Letter</p>
-                       <select 
-                          value={mapping.header} 
-                          onChange={(e) => handleMappingChange('header', e.target.value)}
-                          className="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-green focus:ring focus:ring-brand-green/20"
-                        >
-                          {keys.map(k => <option key={k} value={k}>{k}</option>)}
-                       </select>
-                     </div>
-
-                     <div>
-                       <label className="block text-sm font-medium text-gray-700 mb-1 uppercase tracking-wide">2. Content (Middle)</label>
-                        <p className="text-xs text-gray-500 mb-2">e.g. Dish Name</p>
-                       <select 
-                          value={mapping.content} 
-                          onChange={(e) => handleMappingChange('content', e.target.value)}
-                          className="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-green focus:ring focus:ring-brand-green/20"
-                        >
-                          {keys.map(k => <option key={k} value={k}>{k}</option>)}
-                       </select>
-                     </div>
-                   </div>
-
-                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-gray-100 pt-4">
-                     <div>
-                       <label className="block text-sm font-medium text-brand-pink mb-1 uppercase tracking-wide">3. Footer (Bottom)</label>
-                        <p className="text-xs text-gray-500 mb-2">e.g. User Name</p>
-                       <select 
-                          value={mapping.footer} 
-                          onChange={(e) => handleMappingChange('footer', e.target.value)}
-                          className="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-green focus:ring focus:ring-brand-green/20"
-                        >
-                          {keys.map(k => <option key={k} value={k}>{k}</option>)}
-                       </select>
-                     </div>
-                     
-                     <div>
-                       <label className="block text-sm font-medium text-gray-500 mb-1 uppercase tracking-wide">4. Sub-Footer (End)</label>
-                        <p className="text-xs text-gray-500 mb-2">e.g. Company Name</p>
-                       <select 
-                          value={mapping.subFooter} 
-                          onChange={(e) => handleMappingChange('subFooter', e.target.value)}
-                          className="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-green focus:ring focus:ring-brand-green/20"
-                        >
-                          {keys.map(k => <option key={k} value={k}>{k}</option>)}
-                       </select>
-                     </div>
-                   </div>
+                          {['customerName', 'dishLetter', 'dishType', 'dishName', 'allergens', 'brand'].map(f => (
+                             <div key={f}><label className="text-xs uppercase font-bold">{f}</label><select value={mapping[f]} onChange={e => setMapping({...mapping, [f]: e.target.value})} className="w-full text-sm border rounded"><option value="">(None)</option>{keys.map(k=><option key={k} value={k}>{k}</option>)}</select></div>
+                          ))}
                  </div>
                </div>
                
@@ -549,16 +604,7 @@ const App = () => {
   );
 };
 
-// ----------------------------------------------------------------------
-// BOOTSTRAP
-// ----------------------------------------------------------------------
-
-const rootElement = document.getElementById('root');
-if (!rootElement) {
-  throw new Error("Could not find root element to mount to");
-}
-
-const root = ReactDOM.createRoot(rootElement);
+const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <App />
