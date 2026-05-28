@@ -200,21 +200,18 @@ export const downloadPDF = (data: LabelData[]) => {
 };
 
 export const printPDF = (data: LabelData[]) => {
-  // Open window immediately to bypass Chrome/Safari popup blockers
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) {
-    alert("Please allow popups to open the print dialog.");
-    return;
-  }
-
   const doc = createPDFDoc(data);
   doc.autoPrint(); // Injects print script into PDF
   
   const blob = doc.output("blob");
   const url = URL.createObjectURL(blob);
   
-  // Set the location of the pre-opened window
-  printWindow.location.href = url;
+  // Open in new tab - because this is a synchronous event, Chrome won't block it
+  const printWindow = window.open(url, '_blank');
+  
+  if (!printWindow) {
+    alert("Please allow popups to open the print dialog. Check the popup blocker icon in your address bar.");
+  }
 };
 
 export const generatePDF = downloadPDF;
