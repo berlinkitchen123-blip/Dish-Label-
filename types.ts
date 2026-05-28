@@ -1,6 +1,6 @@
 export interface LabelData {
   id: string;
-  customerEmail: string; // "h@example.com" -> Styled H
+  customerName: string; // "h@example.com" -> Styled H
   dishLetter: string;   // "A"
   dishType: string;     // "Starter"
   dishName: string;     // "Soup"
@@ -14,7 +14,7 @@ export interface RawJsonItem {
 }
 
 export interface FieldMapping {
-  customerEmail: string;
+  customerName: string;
   dishLetter: string;
   dishType: string;
   dishName: string;

@@ -11,7 +11,7 @@ const App: React.FC = () => {
   
   // Updated Mapping State for 6 fields
   const [mapping, setMapping] = useState<FieldMapping>({ 
-    customerEmail: '', 
+    customerName: '', 
     dishLetter: '', 
     dishType: '', 
     dishName: '', 
@@ -49,7 +49,7 @@ const App: React.FC = () => {
                   
                   for (let i = 0; i < qty; i++) {
                     flatList.push({
-                      "Customer Email": user.username || user.email || "",
+                      "Customer Name": user.username || user.email || "",
                       "Dish Letter": dishLabel,
                       "Dish Type": recipeType,
                       "Dish Name": dishName,
@@ -61,7 +61,7 @@ const App: React.FC = () => {
                 });
               } else {
                 flatList.push({
-                  "Customer Email": "",
+                  "Customer Name": "",
                   "Dish Letter": dishLabel,
                   "Dish Type": recipeType,
                   "Dish Name": dishName,
@@ -94,7 +94,7 @@ const App: React.FC = () => {
         availableKeys.find(k => keywords.some(w => k.toLowerCase().includes(w))) || '';
 
       const newMapping: FieldMapping = {
-        customerEmail: getKey(['username', 'email', 'customer', 'user', 'client']),
+        customerName: getKey(['username', 'email', 'customer', 'user', 'client', 'name']),
         dishLetter: getKey(['letter', 'label', 'addon', 'code']),
         dishType: getKey(['type', 'recipe', 'category']),
         dishName: getKey(['dish name', 'name', 'item', 'content', 'product']),
@@ -121,7 +121,7 @@ const App: React.FC = () => {
         
         return {
           id: `label-${idx}`,
-          customerEmail: item[mapping.customerEmail] ? String(item[mapping.customerEmail]) : '',
+          customerName: item[mapping.customerName] ? String(item[mapping.customerName]) : '',
           dishLetter: item[mapping.dishLetter] ? String(item[mapping.dishLetter]) : '',
           dishType: item[mapping.dishType] ? String(item[mapping.dishType]) : '',
           dishName: item[mapping.dishName] ? String(item[mapping.dishName]) : '',
@@ -193,11 +193,11 @@ const App: React.FC = () => {
             <div className="text-center mb-10 max-w-2xl">
               <h2 className="text-4xl font-extrabold text-gray-900 mb-4">Generate Professional Labels</h2>
               <p className="text-lg text-gray-600">
-                Paste your JSON data. Layout customized for <strong>Customer Email Styling</strong> (Double Size First Letter).
+                Paste your JSON data. Layout customized for <strong>Customer Name Styling</strong> (Double Size First Letter).
               </p>
             </div>
             <FileUpload onDataLoaded={handleDataLoaded} />
-             <div className="mt-16 text-xs text-gray-300">v2.0 (Custom Layout)</div>
+             <div className="mt-16 text-xs text-gray-300">v2.1 (Custom Layout)</div>
           </div>
         )}
 
@@ -219,7 +219,7 @@ const App: React.FC = () => {
                         <LabelPreview 
                             data={{ 
                               id: 'demo', 
-                              customerEmail: mapping.customerEmail ? getRawValue(rawData[0], mapping.customerEmail) || 'test@example.com' : 'test@example.com', 
+                              customerName: mapping.customerName ? getRawValue(rawData[0], mapping.customerName) || 'Johndoe' : 'Johndoe', 
                               dishLetter: mapping.dishLetter ? getRawValue(rawData[0], mapping.dishLetter) || 'A' : 'A', 
                               dishType: mapping.dishType ? getRawValue(rawData[0], mapping.dishType) || 'Starter' : 'Starter', 
                               dishName: mapping.dishName ? getRawValue(rawData[0], mapping.dishName) || 'Tomato Soup' : 'Tomato Soup', 
@@ -234,8 +234,8 @@ const App: React.FC = () => {
                      <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="text-xs font-bold text-brand-green uppercase">1. Customer Email</label>
-                            <select value={mapping.customerEmail} onChange={(e) => handleMappingChange('customerEmail', e.target.value)} className="w-full text-xs rounded border-gray-300 mt-1">
+                            <label className="text-xs font-bold text-brand-green uppercase">1. Customer Name</label>
+                            <select value={mapping.customerName} onChange={(e) => handleMappingChange('customerName', e.target.value)} className="w-full text-xs rounded border-gray-300 mt-1">
                               <option value="">(None)</option>
                               {keys.map(k => <option key={k} value={k}>{k}</option>)}
                             </select>
@@ -305,7 +305,7 @@ const App: React.FC = () => {
                                 <td className="px-4 py-3 text-xs text-gray-400">{i + 1}</td>
                                 <td className="px-4 py-3 text-sm text-gray-900">
                                    <div className="flex justify-between">
-                                      <span className="font-bold text-brand-green">{row.customerEmail || "-"}</span>
+                                      <span className="font-bold text-brand-green">{row.customerName || "-"}</span>
                                       <span className="font-bold text-brand-green">{row.dishLetter}</span>
                                    </div>
                                    <div className="text-xs text-gray-500">{row.dishType}</div>
