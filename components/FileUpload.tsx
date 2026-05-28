@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ClipboardPaste, AlertCircle, ArrowRight, FileJson } from 'lucide-react';
+import JSON5 from 'json5';
 
 interface FileUploadProps {
   onDataLoaded: (data: any[]) => void;
@@ -17,12 +18,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded }) => {
     }
 
     try {
-      // Basic cleanup for smart quotes which often happen when copying from documents
-      const cleanText = jsonText
-        .replace(/[\u201C\u201D]/g, '"')
-        .replace(/[\u2018\u2019]/g, "'");
-
-      const json = JSON.parse(cleanText);
+      // JSON5 handles most trailing commas and unquoted keys.
+      // We removed the aggressive smart-quote replacement because it would accidentally replace
+      // smart quotes inside valid string values (e.g., "Mushroom Sauce “Hunter-Style”") 
+      // with unescaped straight double-quotes, breaking the JSON structure.
+      const json = JSON5.parse(jsonText);
       
       if (Array.isArray(json)) {
         onDataLoaded(json);
@@ -32,8 +32,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded }) => {
       } else {
         setError("JSON must be an array of objects or a single object.");
       }
-    } catch (err) {
-      setError("Invalid JSON format. Please check for missing commas, quotes, or brackets.");
+    } catch (err: any) {
+      setError(`Invalid JSON format: ${err.message || "Please check for missing commas, quotes, or brackets."}`);
     }
   };
 

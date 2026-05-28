@@ -1,0 +1,270 @@
+{
+    "id": "3e5354f2-dc59-484e-bbc1-0e7c46e5bffb",
+    "name": "PayPal -  Berlin",
+    "readyTime": "08:30",
+    "leaveTime": "09:00",
+    "isDispatched": false,
+    "deliveryDriverName": null,
+    "deliveryName": null,
+    "deliveryCity": null,
+    "deliveryPostalCode": null,
+    "deliverySlotStart": null,
+    "deliverySlotEnd": null,
+    "deliveryAddress": null,
+    "deliveryInstructions": null,
+    "deliveryBoxIds": null,
+    "boxes": [
+        {
+            "uniqueIdentifier": "cb-1-PayPal -  Berlin-2026-05-28",
+            "name": null,
+            "plateId": null,
+            "type": "cold",
+            "size": "big",
+            "dishes": [
+                {
+                    "id": "090eb834-696a-4d9a-8b0b-abaf7e37858e",
+                    "name": "Heat to Eat: Sweet Potato Curry",
+                    "label": "3",
+                    "isCooked": true,
+                    "bowlCodes": [],
+                    "users": [
+                        {
+                            "id": "bed56abf-9f3d-4b83-ae32-bf8c7fa1e2c6",
+                            "username": "ssethuramalingam",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        }
+                    ]
+                },
+                {
+                    "id": "1cc7495a-072e-4b76-9064-058a5150449c",
+                    "name": "Greek Chicken Bowl",
+                    "label": "A",
+                    "isCooked": true,
+                    "bowlCodes": [],
+                    "users": [
+                        {
+                            "id": "e2f24f7a-e6f7-4ed0-807d-05099ca96b88",
+                            "username": "arahardjo",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "16e9514a-25d0-442c-b01f-16741218b970",
+                            "username": "meido",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "b9381f0b-efdd-4665-8441-a9096031e77b",
+                            "username": "Sergio",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        }
+                    ]
+                },
+                {
+                    "id": "20914ac4-bdbc-4514-ad9d-3d91d8253c18",
+                    "name": "Garden Green Salad with Chicken",
+                    "label": "B",
+                    "isCooked": true,
+                    "bowlCodes": [],
+                    "users": [
+                        {
+                            "id": "893575b4-fddc-44f4-bef1-ac9fed6c72d8",
+                            "username": "anke",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "0bade648-47de-4304-8797-1a054f54e8c1",
+                            "username": "Arda",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "221c5300-a860-47b3-8402-ba0d6f4beb10",
+                            "username": "Derya",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "a92cdc7e-78f3-4692-88dc-e17d490d2d5d",
+                            "username": "ehebard",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "c7e4ef7d-3a91-425a-9030-7af123b9344f",
+                            "username": "Georgihoo",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "67785045-4a3d-49eb-b0f3-7d5bf8f24730",
+                            "username": "Guido Roepke",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "dec15e7e-8ba7-4b71-823e-ee75457932fd",
+                            "username": "kimia k",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "76cb73a7-8f2c-4198-acff-ac615f801579",
+                            "username": "sschneefuss",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "27b548f8-92d7-43f8-9056-3d0bfe8bdde5",
+                            "username": "Stephan",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "0176cbe2-178b-4c51-89ea-3556e9fdecdb",
+                            "username": "Teddy",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "9744ee89-2039-44fa-9ded-99d80f05164a",
+                            "username": "thho",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "ade4185c-cd68-4f4e-950d-ea70c0ef8f6e",
+                            "username": "vconradt",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        }
+                    ]
+                },
+                {
+                    "id": "33553c78-712f-4968-a330-edc2916eab70",
+                    "name": "Test & Tell: High Protein Bang Bang Chicken Salad",
+                    "label": "C",
+                    "isCooked": true,
+                    "bowlCodes": [],
+                    "users": [
+                        {
+                            "id": "c67e84da-47c2-40ee-a474-50c02134f4b4",
+                            "username": "malbinus",
+                            "orderedQuantity": 2,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "9d1bf78d-cdf4-4d65-b97d-6b897f21c888",
+                            "username": "michaelmoeglich",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        }
+                    ]
+                },
+                {
+                    "id": "2ac07483-8ea4-4f12-9ca7-4470dcab49a4",
+                    "name": "Club Sandwich",
+                    "label": "I",
+                    "isCooked": true,
+                    "bowlCodes": [],
+                    "users": [
+                        {
+                            "id": "bb9cf139-cca3-4082-b0a5-c8e572f332f6",
+                            "username": "csainz",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "3ab5f9b4-7f85-4489-9fd4-55dcb3faa5dc",
+                            "username": "cscheperstuke",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "e3fcae70-2a70-45d7-9c9f-389d5a3b2288",
+                            "username": "ffaehnrich",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "5c41cf77-0e4e-49f3-aed1-57786f5b01e3",
+                            "username": "slaube",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        }
+                    ]
+                },
+                {
+                    "id": "1e030768-fdd3-4368-9f26-7ddf9fead270",
+                    "name": "Test&Tell: Pizza Kebab Sandwich",
+                    "label": "J",
+                    "isCooked": true,
+                    "bowlCodes": [],
+                    "users": [
+                        {
+                            "id": "a6b6e838-1fda-4215-8895-f18d8dd0c41a",
+                            "username": "Steffi",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "uniqueIdentifier": "cb-2-PayPal -  Berlin-2026-05-28",
+            "name": null,
+            "plateId": null,
+            "type": "cold",
+            "size": "big",
+            "dishes": [
+                {
+                    "id": "3cc1e666-8231-48af-8d6f-a4e4af7eee85",
+                    "name": "Heat to Eat: Chicken in Mushroom Sauce “Hunter-Style”",
+                    "label": "2",
+                    "isCooked": true,
+                    "bowlCodes": [],
+                    "users": [
+                        {
+                            "id": "77f66b28-2bcb-4f46-bc87-9b6a646bb54b",
+                            "username": "amatthiesen",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "52eb332b-bf74-4862-935e-00fcdc28c5d4",
+                            "username": "gab",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        }
+                    ]
+                },
+                {
+                    "id": "33553c78-712f-4968-a330-edc2916eab70",
+                    "name": "Test & Tell: High Protein Bang Bang Chicken Salad",
+                    "label": "C",
+                    "isCooked": true,
+                    "bowlCodes": [],
+                    "users": [
+                        {
+                            "id": "285d743b-6774-4e71-a970-ebc5e2353835",
+                            "username": "hrieper",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        },
+                        {
+                            "id": "84572e69-1d9f-4d4f-b56a-19b61db8fd3d",
+                            "username": "Klaus",
+                            "orderedQuantity": 1,
+                            "packedQuantity": 0
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
