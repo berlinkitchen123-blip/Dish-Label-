@@ -89,9 +89,14 @@ const App: React.FC = () => {
       const availableKeys = Object.keys(processedData[0]).filter(k => k !== '_initialQty');
       setKeys(availableKeys);
       
-      // Smart Auto-Mapping
-      const getKey = (keywords: string[]) => 
-        availableKeys.find(k => keywords.some(w => k.toLowerCase().includes(w))) || '';
+      // Smart Auto-Mapping - prioritize keywords sequentially
+      const getKey = (keywords: string[]) => {
+        for (const w of keywords) {
+          const match = availableKeys.find(k => k.toLowerCase().includes(w));
+          if (match) return match;
+        }
+        return '';
+      };
 
       const newMapping: FieldMapping = {
         customerName: getKey(['username', 'email', 'customer', 'user', 'client', 'name']),
