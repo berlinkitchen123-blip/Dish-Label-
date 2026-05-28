@@ -7,10 +7,8 @@ interface LabelPreviewProps {
 }
 
 export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1 }) => {
-  // Extract first name for "First Customer name" requirement, or use full name
+  // Use full name
   const rawName = (data.customerName || "").toUpperCase();
-  const firstChar = rawName.charAt(0);
-  const restOfName = rawName.slice(1);
   
   const dishLetter = (data.dishLetter || "A").toUpperCase();
   const brandText = (data.brand || "RESTAURANT").toUpperCase();
@@ -30,13 +28,10 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1 }) =
         className="w-full bg-white rounded border border-gray-300 shadow-sm flex flex-col items-center p-2 relative overflow-hidden"
         style={{ height: '145px' }} 
       >
-        {/* 1. Customer Name (Middle, First Letter Double Size) */}
-        <div className="w-full flex justify-center items-baseline mt-1 mb-0.5">
-          <span className="text-black font-extrabold text-[32px] leading-none uppercase tracking-tight">
-            {firstChar}
-          </span>
-          <span className="text-black font-extrabold text-[16px] leading-none uppercase tracking-tight -ml-1">
-            {restOfName}
+        {/* 1. Customer Name */}
+        <div className="w-full flex justify-center items-center mt-1 mb-0.5">
+          <span className="text-black font-extrabold text-[16px] leading-none uppercase tracking-tight truncate px-1">
+            {rawName}
           </span>
         </div>
 

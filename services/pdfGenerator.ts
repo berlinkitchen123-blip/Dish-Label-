@@ -60,30 +60,10 @@ const createPDFDoc = (data: LabelData[]): jsPDF => {
     const customerName = (item.customerName || "").trim().toUpperCase();
     
     if (customerName) {
-        const firstChar = customerName.charAt(0);
-        const rest = customerName.slice(1);
-
         doc.setFont("helvetica", "bold");
         doc.setTextColor(0, 0, 0); // Black for thermal printing
-
-        doc.setFontSize(24);
-        const w1 = doc.getTextWidth(firstChar);
-        doc.setFontSize(12);
-        const w2 = doc.getTextWidth(rest);
-
-        // Reduce the effective width of the first character to tighten the gap
-        // Large font sizes often have extra padding in their bounding boxes
-        const adjustedW1 = w1 * 0.75; 
-        const totalWidth = adjustedW1 + w2;
-        const textStartX = centerX - (totalWidth / 2);
-
-        // Draw First Char
-        doc.setFontSize(24);
-        doc.text(firstChar, textStartX, y + 8);
-
-        // Draw Rest
-        doc.setFontSize(12);
-        doc.text(rest, textStartX + adjustedW1, y + 8);
+        doc.setFontSize(14);
+        doc.text(customerName, centerX, y + 8, { align: "center" });
     } else {
         // Fallback for empty name
         doc.setFont("helvetica", "bold");

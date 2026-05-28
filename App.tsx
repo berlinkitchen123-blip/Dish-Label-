@@ -193,11 +193,11 @@ const App: React.FC = () => {
             <div className="text-center mb-10 max-w-2xl">
               <h2 className="text-4xl font-extrabold text-gray-900 mb-4">Generate Professional Labels</h2>
               <p className="text-lg text-gray-600">
-                Paste your JSON data. Layout customized for <strong>Customer Name Styling</strong> (Double Size First Letter).
+                Paste your JSON data.
               </p>
             </div>
             <FileUpload onDataLoaded={handleDataLoaded} />
-             <div className="mt-16 text-xs text-gray-300">v2.1 (Custom Layout)</div>
+             <div className="mt-16 text-xs text-gray-300">v2.2 (Custom Layout)</div>
           </div>
         )}
 
