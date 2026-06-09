@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { LabelPreview } from './LabelPreview';
+import { LabelPreview, DEFAULT_LOGO_URL } from "./LabelPreview";
 import { downloadPDF, printPDF } from '../services/pdfGenerator';
 import { LabelData } from '../types';
 import { Plus, Trash2, Download, Printer, ArrowLeft, Upload, X, Copy } from 'lucide-react';
@@ -22,7 +22,7 @@ const newRow = (brand = 'BELLABONA'): LabelData => ({
 
 export const ManualLabelBuilder: React.FC<ManualLabelBuilderProps> = ({ onBack }) => {
   const [rows, setRows] = useState<LabelData[]>([newRow()]);
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(DEFAULT_LOGO_URL);
   const [previewIndex, setPreviewIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
