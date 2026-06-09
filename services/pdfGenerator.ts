@@ -5,169 +5,155 @@ import { DEFAULT_LOGO_URL } from "../components/LabelPreview";
 const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-  // ── Page layout (auto-fits 3×7 = 21 labels on A4 210×297mm) ──────────────
+  // ── Page layout: auto-fit 3×7 = 21 labels on A4 (210×297 mm) ─────────────
   const columns     = 3;
   const rowsPerPage = 7;
   const itemsPerPage = columns * rowsPerPage;
 
   const pageW = 210, pageH = 297;
-  const marginX = 7, marginY = 12;          // left/top margin
-  const gapX = 3, gapY = 2;                 // gap between labels
+  const marginX = 8,  marginY = 10;   // outer page margins
+  const gapX    = 3,  gapY   = 2;    // gaps between labels
 
-  // auto-calculate box size to fill the page perfectly
-  const boxWidth  = (pageW - 2 * marginX - (columns - 1) * gapX) / columns;        // ~63.67mm
-  const boxHeight = (pageH - 2 * marginY - (rowsPerPage - 1) * gapY) / rowsPerPage; // ~37.57mm
-  const cornerRadius = 2;
+  const boxWidth  = (pageW - 2*marginX - (columns-1)*gapX)     / columns;     // ~60.67 mm
+  const boxHeight = (pageH - 2*marginY - (rowsPerPage-1)*gapY) / rowsPerPage; // ~37.43 mm
+  const cornerR   = 2;
 
-  // Resolve logo
+  // Resolve logo (PNG/JPEG supported by jsPDF; SVG = HTML preview only)
   const effectiveLogo = logoUrl ?? DEFAULT_LOGO_URL;
-  let logoFormat: string | null = null;
-  let logoData:   string | null = null;
-  if (effectiveLogo.startsWith("data:image/png"))  { logoFormat = "PNG";  logoData = effectiveLogo; }
-  if (effectiveLogo.startsWith("data:image/jpeg") ||
-      effectiveLogo.startsWith("data:image/jpg"))  { logoFormat = "JPEG"; logoData = effectiveLogo; }
+  let logoFmt: string | null = null;
+  let logoData: string | null = null;
+  if (effectiveLogo.startsWith("data:image/png"))                              { logoFmt = "PNG";  logoData = effectiveLogo; }
+  if (effectiveLogo.startsWith("data:image/jpeg")||effectiveLogo.startsWith("data:image/jpg")) { logoFmt = "JPEG"; logoData = effectiveLogo; }
 
-  // Expand quantities (qty=0 → 0 copies; null/undefined → 1)
-  const expandedData: LabelData[] = [];
+  // Expand quantities
+  const expanded: LabelData[] = [];
   data.forEach(item => {
     const qty = item.quantity ?? 1;
-    for (let i = 0; i < qty; i++) expandedData.push(item);
+    for (let i = 0; i < qty; i++) expanded.push(item);
   });
 
-  expandedData.forEach((item, index) => {
+  expanded.forEach((item, index) => {
     if (index > 0 && index % itemsPerPage === 0) doc.addPage();
 
-    const pos     = index % itemsPerPage;
-    const col     = pos % columns;
-    const row     = Math.floor(pos / columns);
-    const x       = marginX + col * (boxWidth + gapX);
-    const y       = marginY + row * (boxHeight + gapY);
-    const cx      = x + boxWidth / 2;   // horizontal centre of label
+    const pos = index % itemsPerPage;
+    const col = pos % columns;
+    const row = Math.floor(pos / columns);
+    const x   = marginX + col * (boxWidth + gapX);
+    const y   = marginY + row * (boxHeight + gapY);
+    const cx  = x + boxWidth / 2;
 
-    // ── Box border ──────────────────────────────────────────────────────────
+    // Box border
     doc.setDrawColor(200, 200, 200);
     doc.setLineWidth(0.1);
-    doc.roundedRect(x, y, boxWidth, boxHeight, cornerRadius, cornerRadius);
+    doc.roundedRect(x, y, boxWidth, boxHeight, cornerR, cornerR);
 
-    // ── Watermark (PNG/JPEG only, low opacity) ──────────────────────────────
-    if (logoData && logoFormat) {
+    // Watermark (PNG/JPEG only)
+    if (logoData && logoFmt) {
       try {
         doc.saveGraphicsState();
         (doc as any).setGState(new (doc as any).GState({ opacity: 0.08 }));
-        const wmW = 46, wmH = 8;
-        doc.addImage(logoData, logoFormat, cx - wmW / 2, y + (boxHeight - wmH) / 2, wmW, wmH);
+        const ww = 44, wh = 7.5;
+        doc.addImage(logoData, logoFmt, cx - ww/2, y + (boxHeight-wh)/2, ww, wh);
         doc.restoreGraphicsState();
-      } catch (_) { /* GState not supported — skip watermark */ }
+      } catch (_) {}
     }
 
-    // ── Content fields ───────────────────────────────────────────────────────
-    const customerName = (item.customerName || "").trim().toUpperCase();
-    const dishName     = (item.dishName     || "").trim();
-    const dishLetter   = (item.dishLetter   || "").toUpperCase().trim();
-    const dishType     = (item.dishType     || "").trim().toUpperCase();
-    const allergens    = (item.allergens    || "").trim().toUpperCase();
-    const brandText    = (item.brand        || "BELLABONA").toUpperCase();
+    // ── Field values ──────────────────────────────────────────────────────────
+    const customer  = (item.customerName || "").trim().toUpperCase();
+    const dishName  = (item.dishName     || "").trim();
+    const letter    = (item.dishLetter   || "").toUpperCase().trim();
+    const dtype     = (item.dishType     || "").trim().toUpperCase();
+    const allerg    = (item.allergens    || "").trim().toUpperCase();
+    const brand     = (item.brand        || "BELLABONA").toUpperCase();
 
-    // ── Layout zones ─────────────────────────────────────────────────────────
-    // Header zone (customer name) — only if present
-    const headerH  = customerName ? 8 : 0;
-    // Footer zone (brand ± allergens ± dishType)
-    const footerLines  = [dishType, allergens, brandText].filter(Boolean);
-    const footerH  = footerLines.length * 3.5 + 1;   // ~3.5mm per line + 1mm padding
-    // Vertical padding inside the box
-    const padY  = 2;
+    // ── Footer: pinned at bottom, drawn first ─────────────────────────────────
+    const footerPad = 1.5;  // mm from box bottom
+    const lineH     = 3.2;  // mm per footer line
+    const footerLines: string[] = [brand];
+    if (allerg) footerLines.unshift(allerg);
+    if (dtype)  footerLines.unshift(dtype);
+    const footerH = footerLines.length * lineH + footerPad;
 
-    const headerTop  = y + padY;
-    const footerBottom = y + boxHeight - padY;
-    const bodyTop    = headerTop + headerH + (headerH ? 1 : 0);
-    const bodyBottom = footerBottom - footerH;
-    const bodyMid    = (bodyTop + bodyBottom) / 2;
-
-    // ── 1. Customer Name ─────────────────────────────────────────────────────
-    if (customerName) {
+    let fy = y + boxHeight - footerPad;
+    // Draw bottom-up: brand → allergens → dishType
+    const footerStack = [brand, allerg, dtype].filter(Boolean);
+    footerStack.forEach(line => {
       doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
       doc.setTextColor(0, 0, 0);
-      doc.setFontSize(12);
-      doc.text(customerName, cx, headerTop + 5, { align: "center" });
-    }
-
-    // ── 2 + 3. Body: Dish Name + Dish Letter (vertically centred) ────────────
-    const hasDishName   = !!dishName;
-    const hasDishLetter = !!dishLetter;
-
-    if (hasDishName || hasDishLetter) {
-      // Estimate body content height
-      let dishNameLines: string[] = [];
-      let bodyContentH = 0;
-
-      if (hasDishName) {
-        doc.setFontSize(9);
-        dishNameLines = doc.splitTextToSize(dishName, boxWidth - 5);
-        if (dishNameLines.length > 2) dishNameLines = dishNameLines.slice(0, 2);
-        bodyContentH += dishNameLines.length * 4.5;  // ~4.5mm per line at 9pt
-      }
-      if (hasDishName && hasDishLetter) bodyContentH += 2; // gap between text and circle
-      if (hasDishLetter) bodyContentH += (dishLetter.length > 2 ? 7 : 9); // box 7mm, circle 9mm (diameter)
-
-      let drawY = bodyMid - bodyContentH / 2;
-
-      // Draw dish name
-      if (hasDishName) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
-        doc.setTextColor(0, 0, 0);
-        doc.setLineHeightFactor(1.3);
-        doc.text(dishNameLines, cx, drawY + 3.5, { align: "center" });
-        doc.setLineHeightFactor(1.15);
-        drawY += dishNameLines.length * 4.5;
-        if (hasDishLetter) drawY += 2;
-      }
-
-      // Draw dish letter
-      if (hasDishLetter) {
-        doc.setDrawColor(0, 0, 0);
-        doc.setLineWidth(0.4);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(0, 0, 0);
-
-        if (dishLetter.length > 2) {
-          doc.setFontSize(9);
-          const tw = doc.getTextWidth(dishLetter);
-          const bw = Math.max(tw + 6, 12), bh = 7;
-          const rx = cx - bw / 2;
-          doc.roundedRect(rx, drawY, bw, bh, 1, 1);
-          doc.text(dishLetter, cx, drawY + bh / 2, { align: "center", baseline: "middle" });
-          drawY += bh;
-        } else {
-          const r = 4.5;
-          const cy2 = drawY + r;
-          doc.circle(cx, cy2, r);
-          doc.setFontSize(12);
-          doc.text(dishLetter, cx, cy2, { align: "center", baseline: "middle" });
-          drawY += r * 2;
-        }
-      }
-    }
-
-    // ── Footer: Dish Type → Allergens → Brand (bottom up then reverse) ────────
-    // Draw from bottom up for proper spacing
-    let fy = footerBottom;
-    const drawFooterLine = (text: string, size = 6.5) => {
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(size);
-      doc.setTextColor(0, 0, 0);
-      // Truncate if too wide
-      let t = text;
+      let t = line;
       while (t.length > 1 && doc.getTextWidth(t) > boxWidth - 4) t = t.slice(0, -1);
-      if (t !== text) t += "…";
+      if (t !== line) t += "…";
       doc.text(t, cx, fy, { align: "center" });
-      fy -= 3.5;
-    };
+      fy -= lineH;
+    });
 
-    // Draw bottom-up: brand first, then allergens, then dishType
-    drawFooterLine(brandText);
-    if (allergens) drawFooterLine(allergens);
-    if (dishType)  drawFooterLine(dishType);
+    // ── Main content: vertically centred in (top … above footer) ─────────────
+    const contentAreaTop    = y + 2;                      // 2mm padding from top
+    const contentAreaBottom = y + boxHeight - footerH - 1; // 1mm gap above footer
+    const contentAreaMid    = (contentAreaTop + contentAreaBottom) / 2;
+
+    // Measure total content height
+    let totalH = 0;
+    let nameLines: string[] = [];
+    const gap = 1.5; // mm gap between items
+
+    if (customer) { totalH += 5.5; } // ~5.5mm for 12pt bold text
+    if (customer && (dishName || letter)) totalH += gap;
+    if (dishName) {
+      doc.setFontSize(9);
+      nameLines = doc.splitTextToSize(dishName, boxWidth - 5);
+      if (nameLines.length > 2) nameLines = nameLines.slice(0, 2);
+      totalH += nameLines.length * 4.2;
+    }
+    if (dishName && letter) totalH += gap;
+    if (letter) { totalH += (letter.length > 2 ? 7 : 9); } // box=7mm, circle=9mm
+
+    // Start drawing from (mid - totalH/2)
+    let dy = contentAreaMid - totalH / 2;
+
+    // Customer name
+    if (customer) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(customer, cx, dy + 4.5, { align: "center" });
+      dy += 5.5;
+      if (dishName || letter) dy += gap;
+    }
+
+    // Dish name
+    if (dishName) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      doc.setLineHeightFactor(1.3);
+      doc.text(nameLines, cx, dy + 3, { align: "center" });
+      doc.setLineHeightFactor(1.15);
+      dy += nameLines.length * 4.2;
+      if (letter) dy += gap;
+    }
+
+    // Dish letter
+    if (letter) {
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.4);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 0, 0);
+      if (letter.length > 2) {
+        doc.setFontSize(9);
+        const tw = doc.getTextWidth(letter);
+        const bw = Math.max(tw + 6, 12);
+        const bh = 7;
+        doc.roundedRect(cx - bw/2, dy, bw, bh, 1, 1);
+        doc.text(letter, cx, dy + bh/2, { align: "center", baseline: "middle" });
+      } else {
+        const r = 4.5;
+        doc.circle(cx, dy + r, r);
+        doc.setFontSize(11);
+        doc.text(letter, cx, dy + r, { align: "center", baseline: "middle" });
+      }
+    }
   });
 
   return doc;
@@ -180,9 +166,8 @@ export const downloadPDF = (data: LabelData[], logoUrl?: string) => {
 export const printPDF = (data: LabelData[], logoUrl?: string) => {
   const doc = createPDFDoc(data, logoUrl);
   doc.autoPrint();
-  const blob = doc.output("blob");
-  const url  = URL.createObjectURL(blob);
-  const w    = window.open(url, "_blank");
+  const url = URL.createObjectURL(doc.output("blob"));
+  const w = window.open(url, "_blank");
   if (!w) alert("Please allow popups to open the print dialog.");
 };
 
