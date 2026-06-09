@@ -2,8 +2,7 @@ import { jsPDF } from "jspdf";
 import { LabelData } from "../types";
 
 // Internal helper to create the PDF document
-const createPDFDoc = (data: LabelData[]): jsPDF => {
-  // A4 dimensions in mm: 210 x 297
+const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
   const doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -14,21 +13,33 @@ const createPDFDoc = (data: LabelData[]): jsPDF => {
   const columns = 3;
   const rows = 7;
   const itemsPerPage = columns * rows;
-  
-  const boxWidth = 63; 
-  const boxHeight = 38; 
-  const cornerRadius = 2; 
-  
+
+  const boxWidth = 63;
+  const boxHeight = 38;
+  const cornerRadius = 2;
+
   const horizontalGap = 3;
-  const verticalGap = 0; 
-  
-  const startX = 7;  
-  const startY = 15.5; 
+  const verticalGap = 0;
+
+  const startX = 7;
+  const startY = 15.5;
+
+  // Determine logo format for jsPDF (only PNG/JPEG supported natively)
+  let logoFormat: string | null = null;
+  let logoData: string | null = null;
+  if (logoUrl) {
+    if (logoUrl.startsWith('data:image/png')) {
+      logoFormat = 'PNG';
+      logoData = logoUrl;
+    } else if (logoUrl.startsWith('data:image/jpeg') || logoUrl.startsWith('data:image/jpg')) {
+      logoFormat = 'JPEG';
+      logoData = logoUrl;
+    }
+    // SVG not supported by jsPDF addImage — falls back to text only
+  }
 
   // Expand data based on quantity
-  // BUG 2 FIX: use ?? 1 so an explicit qty=0 (user excluded this label) produces 0
-  // copies in the PDF, matching the on-screen preview.  Only fall back to 1 when
-  // quantity is null/undefined (i.e. missing from the data entirely).
+  // BUG 2 FIX: use ?? 1 so an explicit qty=0 produces 0 copies in the PDF
   const expandedData: LabelData[] = [];
   data.forEach(item => {
     const qty = item.quantity ?? 1;
@@ -38,7 +49,6 @@ const createPDFDoc = (data: LabelData[]): jsPDF => {
   });
 
   expandedData.forEach((item, index) => {
-    // Check if we need a new page
     if (index > 0 && index % itemsPerPage === 0) {
       doc.addPage();
     }
@@ -50,152 +60,132 @@ const createPDFDoc = (data: LabelData[]): jsPDF => {
     const x = startX + (colIndex * (boxWidth + horizontalGap));
     const y = startY + (rowIndex * (boxHeight + verticalGap));
 
-    // --- Draw Box Border ---
-    doc.setDrawColor(200, 200, 200); 
+    // Draw Box Border
+    doc.setDrawColor(200, 200, 200);
     doc.setLineWidth(0.1);
     doc.roundedRect(x, y, boxWidth, boxHeight, cornerRadius, cornerRadius);
 
     const centerX = x + (boxWidth / 2);
 
-    // ==========================================
-    // 1. Customer Name (Top Center, First Letter Double Size)
-    // ==========================================
+    // 1. Customer Name
     const customerName = (item.customerName || "").trim().toUpperCase();
-    
-    if (customerName) {
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(0, 0, 0); // Black for thermal printing
-        doc.setFontSize(14);
-        doc.text(customerName, centerX, y + 8, { align: "center" });
-    } else {
-        // Fallback for empty name
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(0, 0, 0); 
-        doc.setFontSize(14);
-        doc.text("CUSTOMER", centerX, y + 8, { align: "center" });
-    }
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(14);
+    doc.text(customerName || "CUSTOMER", centerX, y + 8, { align: "center" });
 
-    // ==========================================
-    // 2. Dish Name (Below Name)
-    // ==========================================
+    // 2. Dish Name
     const dishName = item.dishName || "";
-    
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0); // Black
-    
+    doc.setTextColor(0, 0, 0);
     const contentLines = doc.splitTextToSize(dishName, boxWidth - 6);
     const maxLines = 2;
     const displayLines = contentLines.length > maxLines ? contentLines.slice(0, maxLines) : contentLines;
-    
-    // Increase line height for better spacing
     doc.setLineHeightFactor(1.35);
     doc.text(displayLines, centerX, y + 13, { align: "center" });
-    doc.setLineHeightFactor(1.15); // Reset to default
+    doc.setLineHeightFactor(1.15);
 
-    // ==========================================
-    // 3. Dish Letter (Circle or Box for Addons)
-    // ==========================================
+    // 3. Dish Letter (circle or box)
     const dishLetter = (item.dishLetter || "A").toUpperCase();
     const isLongText = dishLetter.length > 2;
-
-    doc.setDrawColor(0, 0, 0); // Black Border
+    doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.4);
 
     if (isLongText) {
-       // Draw Box (Rounded Rectangle to cover "ADDONS")
-       doc.setFontSize(10);
-       const textWidth = doc.getTextWidth(dishLetter);
-       const padding = 3;
-       const boxW = Math.max(textWidth + (padding * 2), 12);
-       const boxH = 8;
-       const rectX = centerX - (boxW / 2);
-       const rectY = y + 19; // Moved up slightly
-
-       doc.roundedRect(rectX, rectY, boxW, boxH, 1, 1);
-       
-       // Center text in box
-       doc.setFont("helvetica", "bold");
-       doc.setTextColor(0, 0, 0);
-       doc.text(dishLetter, centerX, rectY + 5.5, { align: "center" });
+      doc.setFontSize(10);
+      const textWidth = doc.getTextWidth(dishLetter);
+      const padding = 3;
+      const boxW = Math.max(textWidth + (padding * 2), 12);
+      const boxH = 8;
+      const rectX = centerX - (boxW / 2);
+      const rectY = y + 19;
+      doc.roundedRect(rectX, rectY, boxW, boxH, 1, 1);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 0, 0);
+      doc.text(dishLetter, centerX, rectY + 5.5, { align: "center" });
     } else {
-       // Draw Circle (Original Logic)
-       const circleY = y + 23; // Moved up slightly
-       const circleRadius = 4;
-       doc.circle(centerX, circleY, circleRadius);
-
-       doc.setFont("helvetica", "bold");
-       doc.setFontSize(13);
-       doc.setTextColor(0, 0, 0);
-       // BUG 5 FIX: baseline "bottom" renders text above the circle centre.
-       // Use "middle" so the letter is vertically centred inside the circle.
-       doc.text(dishLetter, centerX, circleY, { align: "center", baseline: "middle" });
+      const circleY = y + 23;
+      const circleRadius = 4;
+      doc.circle(centerX, circleY, circleRadius);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(0, 0, 0);
+      // BUG 5 FIX: baseline "middle" so the letter is vertically centred in the circle
+      doc.text(dishLetter, centerX, circleY, { align: "center", baseline: "middle" });
     }
 
-    // ==========================================
-    // Bottom-Up Stacking for Footer Elements
-    // ==========================================
+    // Bottom-up stacking for footer
     let currentBottomY = y + 35;
 
-    // 5. Restaurant (Footer)
-    const brandText = (item.brand || "RESTAURANT").toUpperCase();
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
-    doc.setTextColor(0, 0, 0); // Black
-    doc.text(brandText, centerX, currentBottomY, { align: "center" });
-    currentBottomY -= 3.5;
+    // 5. Brand logo (if PNG/JPEG provided) or brand text
+    if (logoData && logoFormat) {
+      // Draw logo image: max 20mm wide, 5mm tall, centred
+      const logoMaxW = 20;
+      const logoMaxH = 5;
+      try {
+        doc.addImage(logoData, logoFormat, centerX - logoMaxW / 2, currentBottomY - logoMaxH, logoMaxW, logoMaxH);
+      } catch (_) {
+        // Fallback to text if image fails
+        const brandText = (item.brand || "RESTAURANT").toUpperCase();
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(7);
+        doc.setTextColor(0, 0, 0);
+        doc.text(brandText, centerX, currentBottomY, { align: "center" });
+      }
+      currentBottomY -= (logoMaxH + 1);
+    } else {
+      const brandText = (item.brand || "RESTAURANT").toUpperCase();
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(0, 0, 0);
+      doc.text(brandText, centerX, currentBottomY, { align: "center" });
+      currentBottomY -= 3.5;
+    }
 
-    // 4. Allergens (Small, Bottom)
+    // 4. Allergens
     const allergens = (item.allergens || "").toUpperCase();
     if (allergens) {
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(7); // Increased size for readability
-      doc.setTextColor(0, 0, 0); // Black for thermal printers
-      
-      // Truncate if too long
+      doc.setFontSize(7);
+      doc.setTextColor(0, 0, 0);
       let displayAllergens = allergens;
       if (doc.getTextWidth(displayAllergens) > boxWidth - 4) {
-          while (displayAllergens.length > 0 && doc.getTextWidth(displayAllergens + "...") > boxWidth - 4) {
-              displayAllergens = displayAllergens.slice(0, -1);
-          }
-          displayAllergens += "...";
+        while (displayAllergens.length > 0 && doc.getTextWidth(displayAllergens + "...") > boxWidth - 4) {
+          displayAllergens = displayAllergens.slice(0, -1);
+        }
+        displayAllergens += "...";
       }
-      
       doc.text(displayAllergens, centerX, currentBottomY, { align: "center" });
       currentBottomY -= 3.5;
     }
 
-    // 3.5 Dish Type (Vegan, Vegetarian, Meat)
+    // 3.5 Dish Type
     const dishType = (item.dishType || "").toUpperCase();
     if (dishType) {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(7);
-      doc.setTextColor(0, 0, 0); // Black
+      doc.setTextColor(0, 0, 0);
       doc.text(dishType, centerX, currentBottomY, { align: "center" });
     }
-
   });
 
   return doc;
 };
 
-export const downloadPDF = (data: LabelData[]) => {
-  const doc = createPDFDoc(data);
+export const downloadPDF = (data: LabelData[], logoUrl?: string) => {
+  const doc = createPDFDoc(data, logoUrl);
   doc.save("labels.pdf");
 };
 
-export const printPDF = (data: LabelData[]) => {
-  const doc = createPDFDoc(data);
-  doc.autoPrint(); // Injects print script into PDF
-  
+export const printPDF = (data: LabelData[], logoUrl?: string) => {
+  const doc = createPDFDoc(data, logoUrl);
+  doc.autoPrint();
   const blob = doc.output("blob");
   const url = URL.createObjectURL(blob);
-  
-  // Open in new tab - because this is a synchronous event, Chrome won't block it
   const printWindow = window.open(url, '_blank');
-  
   if (!printWindow) {
-    alert("Please allow popups to open the print dialog. Check the popup blocker icon in your address bar.");
+    alert("Please allow popups to open the print dialog.");
   }
 };
 

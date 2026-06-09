@@ -4,29 +4,27 @@ import { LabelData } from '../types';
 interface LabelPreviewProps {
   data: LabelData;
   scale?: number;
+  logoUrl?: string;
 }
 
-export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1 }) => {
-  // Use full name
+export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1, logoUrl }) => {
   const rawName = (data.customerName || "").toUpperCase();
-  
   const dishLetter = (data.dishLetter || "A").toUpperCase();
   const brandText = (data.brand || "RESTAURANT").toUpperCase();
 
   return (
-    <div 
+    <div
       className="flex flex-col items-center mx-auto"
       style={{
         transform: `scale(${scale})`,
         transformOrigin: 'top center',
-        width: '240px' // Represents ~63mm
+        width: '240px'
       }}
     >
-      {/* Main Box - Aspect Ratio approx 63:38 */}
-      {/* 63mm = ~240px, 38mm = ~145px */}
-      <div 
+      {/* Main Box — ~63mm × 38mm */}
+      <div
         className="w-full bg-white rounded border border-gray-300 shadow-sm flex flex-col items-center p-2 relative overflow-hidden"
-        style={{ height: '145px' }} 
+        style={{ height: '145px' }}
       >
         {/* 1. Customer Name */}
         <div className="w-full flex justify-center items-center mt-1 mb-0.5">
@@ -35,49 +33,56 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1 }) =
           </span>
         </div>
 
-        {/* 2. Dish Name (Below Customer) */}
+        {/* 2. Dish Name */}
         <div className="w-full flex justify-center mb-2 px-1 h-9 items-start">
           <p className="text-gray-900 text-center font-normal text-[13px] leading-snug line-clamp-2">
             {data.dishName || "Dish Name Content"}
           </p>
         </div>
 
-        {/* 3. Dish Letter (Circle or Box) */}
+        {/* 3. Dish Letter (circle or box) */}
         <div className="flex flex-col justify-center items-center mb-1">
           {dishLetter.length > 2 ? (
-             <div className="px-2 h-[30px] rounded-[4px] border-[1.5px] border-black flex items-center justify-center min-w-[45px]">
-                <span className="text-black font-bold text-[13px] leading-none uppercase">{dishLetter}</span>
-             </div>
+            <div className="px-2 h-[30px] rounded-[4px] border-[1.5px] border-black flex items-center justify-center min-w-[45px]">
+              <span className="text-black font-bold text-[13px] leading-none uppercase">{dishLetter}</span>
+            </div>
           ) : (
-             <div className="w-[30px] h-[30px] rounded-full border-[1.5px] border-black flex items-center justify-center">
-                <span className="text-black font-bold text-[17px] leading-none">{dishLetter}</span>
-             </div>
+            <div className="w-[30px] h-[30px] rounded-full border-[1.5px] border-black flex items-center justify-center">
+              <span className="text-black font-bold text-[17px] leading-none">{dishLetter}</span>
+            </div>
           )}
         </div>
 
-        {/* 4. Dish Type & Allergens (Small, above footer) */}
+        {/* 4. Dish Type + Allergens + Footer */}
         <div className="mt-auto w-full pb-1">
-            {data.dishType && (
+          {data.dishType && (
             <div className="w-full text-center mb-[2px]">
-                <p className="text-black font-bold uppercase text-[9px] truncate px-2">
+              <p className="text-black font-bold uppercase text-[9px] truncate px-2">
                 {data.dishType}
-                </p>
+              </p>
             </div>
-            )}
-            {data.allergens && (
+          )}
+          {data.allergens && (
             <div className="w-full text-center mb-[2px]">
-                <p className="text-black font-bold uppercase text-[8px] truncate px-2">
+              <p className="text-black font-bold uppercase text-[8px] truncate px-2">
                 {data.allergens}
-                </p>
+              </p>
             </div>
-            )}
+          )}
 
-            {/* 5. Restaurant Name (Footer) */}
-            <div className="w-full text-center pt-[2px]">
+          {/* 5. Logo (if provided) + Brand text */}
+          <div className="w-full flex flex-col items-center pt-[2px]">
+            {logoUrl && (
+              <img
+                src={logoUrl}
+                alt="brand logo"
+                className="max-h-[16px] max-w-[70px] object-contain mb-[1px]"
+              />
+            )}
             <p className="text-black font-bold uppercase text-[9px] tracking-wide truncate">
-                {brandText}
+              {brandText}
             </p>
-            </div>
+          </div>
         </div>
       </div>
     </div>
