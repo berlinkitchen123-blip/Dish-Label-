@@ -45,8 +45,10 @@ const App: React.FC = () => {
               
               if (dish.users && Array.isArray(dish.users) && dish.users.length > 0) {
                 dish.users.forEach((user: any) => {
-                  const qty = Number(user.orderedQuantity) || 1; // Fallback to 1 if missing or 0 to map properly
-                  
+                  // BUG 4 FIX: orderedQuantity=0 means user didn't order — skip them.
+                  // Only fall back to 1 when the field is missing (null/undefined).
+                  const qty = (user.orderedQuantity != null) ? Number(user.orderedQuantity) : 1;
+
                   for (let i = 0; i < qty; i++) {
                     flatList.push({
                       "Customer Name": user.username || user.email || "",
@@ -90,10 +92,15 @@ const App: React.FC = () => {
       setKeys(availableKeys);
       
       // Smart Auto-Mapping - prioritize keywords sequentially
+      // BUG 3 FIX: track already-used keys so two fields can't map to the same JSON key.
+      const usedKeys = new Set<string>();
       const getKey = (keywords: string[]) => {
         for (const w of keywords) {
-          const match = availableKeys.find(k => k.toLowerCase().includes(w));
-          if (match) return match;
+          const match = availableKeys.find(k => !usedKeys.has(k) && k.toLowerCase().includes(w));
+          if (match) {
+            usedKeys.add(match);
+            return match;
+          }
         }
         return '';
       };
@@ -124,14 +131,19 @@ const App: React.FC = () => {
         const jsonQty = item.qty || item.quantity || item._initialQty;
         const finalQty = existingQty !== null ? existingQty : (Number(jsonQty) || 1);
         
+        // BUG 6 FIX: use != null instead of truthy check so numeric 0 / boolean false
+        // values are not silently dropped.
+        const toStr = (val: any, fallback = '') =>
+          val != null ? String(val) : fallback;
+
         return {
           id: `label-${idx}`,
-          customerName: item[mapping.customerName] ? String(item[mapping.customerName]) : '',
-          dishLetter: item[mapping.dishLetter] ? String(item[mapping.dishLetter]) : '',
-          dishType: item[mapping.dishType] ? String(item[mapping.dishType]) : '',
-          dishName: item[mapping.dishName] ? String(item[mapping.dishName]) : '',
-          allergens: item[mapping.allergens] ? String(item[mapping.allergens]) : '',
-          brand: item[mapping.brand] ? String(item[mapping.brand]) : 'BELLABONA',
+          customerName: toStr(item[mapping.customerName]),
+          dishLetter: toStr(item[mapping.dishLetter]),
+          dishType: toStr(item[mapping.dishType]),
+          dishName: toStr(item[mapping.dishName]),
+          allergens: toStr(item[mapping.allergens]),
+          brand: toStr(item[mapping.brand], 'BELLABONA'),
           quantity: finalQty
         };
       });
@@ -318,7 +330,8 @@ const App: React.FC = () => {
                                    <div className="text-xs text-brand-pink">{row.allergens}</div>
                                 </td>
                                 <td className="px-4 py-3">
-                                   <input type="number" min="0" value={row.quantity} onChange={(e) => handleQuantityChange(i, parseInt(e.target.value) || 0)} className="w-16 text-sm rounded border-gray-300 p-1" />
+                                   {/* BUG 1 FIX: clamp to >= 0 so negative values don't cause Array(-n) RangeError */}
+                                   <input type="number" min="0" value={row.quantity} onChange={(e) => handleQuantityChange(i, Math.max(0, parseInt(e.target.value) || 0))} className="w-16 text-sm rounded border-gray-300 p-1" />
                                 </td>
                               </tr>
                             ))}

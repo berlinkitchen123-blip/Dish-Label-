@@ -26,9 +26,12 @@ const createPDFDoc = (data: LabelData[]): jsPDF => {
   const startY = 15.5; 
 
   // Expand data based on quantity
+  // BUG 2 FIX: use ?? 1 so an explicit qty=0 (user excluded this label) produces 0
+  // copies in the PDF, matching the on-screen preview.  Only fall back to 1 when
+  // quantity is null/undefined (i.e. missing from the data entirely).
   const expandedData: LabelData[] = [];
   data.forEach(item => {
-    const qty = item.quantity > 0 ? item.quantity : 1;
+    const qty = item.quantity ?? 1;
     for (let i = 0; i < qty; i++) {
       expandedData.push(item);
     }
@@ -124,7 +127,9 @@ const createPDFDoc = (data: LabelData[]): jsPDF => {
        doc.setFont("helvetica", "bold");
        doc.setFontSize(13);
        doc.setTextColor(0, 0, 0);
-       doc.text(dishLetter, centerX, circleY + 1.5, { align: "center", baseline: "bottom" });
+       // BUG 5 FIX: baseline "bottom" renders text above the circle centre.
+       // Use "middle" so the letter is vertically centred inside the circle.
+       doc.text(dishLetter, centerX, circleY, { align: "center", baseline: "middle" });
     }
 
     // ==========================================
