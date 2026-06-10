@@ -9,14 +9,14 @@ interface ManualLabelBuilderProps {
 }
 
 let rowCounter = 0;
-const newRow = (brand = 'BELLABONA'): LabelData => ({
+const newRow = (): LabelData => ({
   id: `manual-${++rowCounter}`,
   customerName: '',
   dishLetter: '',
   dishType: '',
   dishName: '',
   allergens: '',
-  brand,
+  brand: 'BELLABONA',
   quantity: 1,
 });
 
@@ -35,8 +35,7 @@ export const ManualLabelBuilder: React.FC<ManualLabelBuilderProps> = ({ onBack }
   };
 
   const addRow = () => {
-    const lastBrand = rows[rows.length - 1]?.brand || 'BELLABONA';
-    setRows(prev => [...prev, newRow(lastBrand)]);
+    setRows(prev => [...prev, newRow()]);
   };
 
   const updateRow = (idx: number, field: keyof LabelData, value: string | number) => {
@@ -203,7 +202,6 @@ export const ManualLabelBuilder: React.FC<ManualLabelBuilderProps> = ({ onBack }
                       <th className="px-2 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">Dish Type</th>
                       <th className="px-2 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[140px]">Dish Name</th>
                       <th className="px-2 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">Allergens</th>
-                      <th className="px-2 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">Brand</th>
                       <th className="px-2 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">Qty</th>
                       <th className="px-2 py-2.5 w-16"></th>
                     </tr>
@@ -256,14 +254,6 @@ export const ManualLabelBuilder: React.FC<ManualLabelBuilderProps> = ({ onBack }
                             value={row.allergens}
                             onChange={e => updateRow(i, 'allergens', e.target.value)}
                             placeholder="Gluten"
-                          />
-                        </td>
-                        <td className="px-2 py-2" onClick={e => e.stopPropagation()}>
-                          <input
-                            className="w-full text-sm border border-gray-200 rounded px-2 py-1.5 focus:outline-none focus:border-brand-green transition-colors"
-                            value={row.brand}
-                            onChange={e => updateRow(i, 'brand', e.target.value)}
-                            placeholder="BELLABONA"
                           />
                         </td>
                         <td className="px-2 py-2" onClick={e => e.stopPropagation()}>

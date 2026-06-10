@@ -74,7 +74,7 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
     const letter   = (item.dishLetter  ||"").toUpperCase().trim();
     const dtype    = (item.dishType    ||"").trim().toUpperCase();
     const allerg   = (item.allergens   ||"").trim().toUpperCase();
-    const brand    = (item.brand       ||"BELLABONA").toUpperCase();
+    const brand    = 'BELLABONA';
 
     // Count of filled main fields (same logic as LabelPreview)
     const count = [customer, dishName, letter].filter(Boolean).length;

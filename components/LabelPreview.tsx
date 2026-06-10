@@ -33,7 +33,7 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1, log
   const dishName     = (data.dishName    || '').trim();
   const dishType     = (data.dishType    || '').toUpperCase().trim();
   const allergens    = (data.allergens   || '').toUpperCase().trim();
-  const brandText    = (data.brand       || 'BELLABONA').toUpperCase();
+  const brandText    = 'BELLABONA';
   const logo         = logoUrl ?? DEFAULT_LOGO_URL;
 
   const count    = [customerName, dishName, dishLetter].filter(Boolean).length;

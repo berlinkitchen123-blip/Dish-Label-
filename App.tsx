@@ -146,7 +146,7 @@ const App: React.FC = () => {
           dishType: toStr(item[mapping.dishType]),
           dishName: toStr(item[mapping.dishName]),
           allergens: toStr(item[mapping.allergens]),
-          brand: toStr(item[mapping.brand], 'BELLABONA'),
+          brand: 'BELLABONA',
           quantity: finalQty
         };
       });
@@ -268,7 +268,7 @@ const App: React.FC = () => {
                           dishType: mapping.dishType ? getRawValue(rawData[0], mapping.dishType) || 'Starter' : 'Starter',
                           dishName: mapping.dishName ? getRawValue(rawData[0], mapping.dishName) || 'Tomato Soup' : 'Tomato Soup',
                           allergens: mapping.allergens ? getRawValue(rawData[0], mapping.allergens) || 'Gluten' : 'Gluten',
-                          brand: mapping.brand ? getRawValue(rawData[0], mapping.brand) || 'BELLABONA' : 'BELLABONA',
+                          brand: 'BELLABONA',
                           quantity: 1
                         }}
                       />
@@ -316,13 +316,7 @@ const App: React.FC = () => {
                           {keys.map(k => <option key={k} value={k}>{k}</option>)}
                         </select>
                       </div>
-                      <div>
-                        <label className="text-xs font-bold text-gray-400 uppercase">6. Brand</label>
-                        <select value={mapping.brand} onChange={(e) => handleMappingChange('brand', e.target.value)} className="w-full text-xs rounded border-gray-300 mt-1">
-                          <option value="">(Default: BELLABONA)</option>
-                          {keys.map(k => <option key={k} value={k}>{k}</option>)}
-                        </select>
-                      </div>
+
                     </div>
                   </div>
                 </div>
