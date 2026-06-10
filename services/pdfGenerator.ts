@@ -35,7 +35,7 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
   const startY  = 15.5;
   const cornerR = 2;
 
-  const footerH = 9.5; // space for BELLABONA 15pt + optional sub-line
+  const footerH = 6.5; // just the logo image
 
   const eLogo = logoUrl ?? DEFAULT_LOGO_URL;
   let lFmt: string | null = null, lData: string | null = null;
@@ -79,18 +79,8 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
     doc.setLineWidth(0.3);
     doc.line(x+4, sepY, x+boxW-4, sepY);
 
-    // Allergens only above logo (dishType/HOT/COLD removed)
-    let logoY = sepY + 1.5;
-    if (allerg) {
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(7);
-      doc.setTextColor(90, 90, 90);
-      let t = allerg;
-      while (t.length > 1 && doc.getTextWidth(t) > boxW-4) t = t.slice(0,-1);
-      if (t !== allerg) t += "…";
-      doc.text(t, cx, logoY + 1.5, { align: "center" });
-      logoY += 3.5;
-    }
+    // Logo image in footer (just the logo, allergens moved to content zone)
+    const logoY = sepY + 1.5;
 
     // Logo image in footer (PNG/JPEG); fallback to styled text for SVG/default
     if (lData && lFmt) {
@@ -133,6 +123,7 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
     if (letter) {
       totalH += (letter.length > 2 ? 8 : circleR * 2);
     }
+    if (allerg) totalH += gap + 3.5;
 
     // Start drawing from vertical centre
     let dy = contentMid - totalH / 2;
@@ -181,6 +172,18 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
         doc.setFontSize(circleR * 3.5);  // ~55% of diameter in pt
         doc.text(letter, cx, dy + circleR, { align:"center", baseline:"middle" });
       }
+    }
+
+    // Allergens — in content zone, after main fields
+    if (allerg) {
+      dy += gap;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(90, 90, 90);
+      let t = allerg;
+      while (t.length > 1 && doc.getTextWidth(t) > boxW - 4) t = t.slice(0, -1);
+      if (t !== allerg) t += "…";
+      doc.text(t, cx, dy + 2.5, { align: "center" });
     }
   });
 
