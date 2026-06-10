@@ -96,7 +96,7 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1, log
           {dishName && (
             <p style={{
               fontSize: `${fs}px`, fontWeight: count === 1 ? 600 : 400,
-              lineHeight: 1.2, color: '#222', textAlign: 'center', margin: 0,
+              lineHeight: 1.2, color: '#F06EB5', textAlign: 'center', margin: 0,
               maxWidth: '100%',
               display: '-webkit-box',
               WebkitLineClamp: count === 1 ? 3 : 2,

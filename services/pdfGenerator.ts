@@ -150,7 +150,7 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
     if (dishName) {
       doc.setFont("helvetica", customer ? "normal" : "bold");
       doc.setFontSize(MAIN_PT);
-      doc.setTextColor(20, 20, 20);
+      doc.setTextColor(240, 110, 181);
       doc.setLineHeightFactor(1.25);
       doc.text(nameLines, cx, dy + lineH_mm * 0.8, { align: "center" });
       doc.setLineHeightFactor(1.15);
