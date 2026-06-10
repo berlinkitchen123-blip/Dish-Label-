@@ -25,11 +25,14 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
   const columns = 3, rowsPerPage = 7, itemsPerPage = columns * rowsPerPage;
-  const pageW = 210, pageH = 297;
-  const marginX = 8, marginY = 10, gapX = 3, gapY = 2;
 
-  const boxW = (pageW - 2*marginX - (columns-1)*gapX) / columns;
-  const boxH = (pageH - 2*marginY - (rowsPerPage-1)*gapY) / rowsPerPage;
+  // Original layout values — do not change
+  const boxW    = 63;
+  const boxH    = 38;
+  const gapX    = 3;
+  const gapY    = 0;
+  const startX  = 7;
+  const startY  = 15.5;
   const cornerR = 2;
 
   const footerH = 9.5; // space for BELLABONA 15pt + optional sub-line
@@ -49,8 +52,8 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
     if (index > 0 && index % itemsPerPage === 0) doc.addPage();
 
     const pos = index % itemsPerPage;
-    const x   = marginX + (pos % columns)           * (boxW + gapX);
-    const y   = marginY + Math.floor(pos / columns)  * (boxH + gapY);
+    const x   = startX + (pos % columns)           * (boxW + gapX);
+    const y   = startY + Math.floor(pos / columns)  * (boxH + gapY);
     const cx  = x + boxW / 2;
 
     // Box border
