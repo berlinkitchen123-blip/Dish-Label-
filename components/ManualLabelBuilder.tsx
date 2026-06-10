@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { LabelPreview, DEFAULT_LOGO_URL } from "./LabelPreview";
 import { downloadPDF, printPDF } from '../services/pdfGenerator';
 import { LabelData } from '../types';
-import { Plus, Trash2, Download, Printer, ArrowLeft, Upload, X, Copy } from 'lucide-react';
+import { Plus, Trash2, Download, Printer, ArrowLeft, Upload, Lock, Copy } from 'lucide-react';
 
 interface ManualLabelBuilderProps {
   onBack: () => void;
@@ -22,15 +22,22 @@ const newRow = (): LabelData => ({
 
 export const ManualLabelBuilder: React.FC<ManualLabelBuilderProps> = ({ onBack }) => {
   const [rows, setRows] = useState<LabelData[]>([newRow()]);
-  const [logoUrl, setLogoUrl] = useState<string | null>(DEFAULT_LOGO_URL);
+  const savedLogo = localStorage.getItem('bellabona_logo');
+  const [logoUrl, setLogoUrl] = useState<string | null>(savedLogo ?? DEFAULT_LOGO_URL);
+  const [logoLocked, setLogoLocked] = useState<boolean>(!!savedLogo);
   const [previewIndex, setPreviewIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || logoLocked) return;
     const reader = new FileReader();
-    reader.onload = () => setLogoUrl(reader.result as string);
+    reader.onload = () => {
+      const url = reader.result as string;
+      setLogoUrl(url);
+      setLogoLocked(true);
+      localStorage.setItem('bellabona_logo', url);
+    };
     reader.readAsDataURL(file);
   };
 
@@ -109,15 +116,10 @@ export const ManualLabelBuilder: React.FC<ManualLabelBuilderProps> = ({ onBack }
               <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
                 Brand Logo
               </h3>
-              {logoUrl ? (
-                <div className="relative flex items-center justify-center p-3 bg-gray-50 rounded-lg border border-gray-200">
+              {logoUrl && logoLocked ? (
+                <div className="flex items-center justify-center p-3 bg-gray-50 rounded-lg border border-gray-200">
                   <img src={logoUrl} alt="Logo" className="max-h-16 max-w-full object-contain" />
-                  <button
-                    onClick={() => setLogoUrl(null)}
-                    className="absolute top-1 right-1 bg-white rounded-full p-0.5 shadow border border-gray-200 hover:bg-red-50 transition-colors"
-                  >
-                    <X className="w-3 h-3 text-gray-500" />
-                  </button>
+                  <Lock className="w-3.5 h-3.5 text-brand-green ml-2 flex-shrink-0" title="Logo locked" />
                 </div>
               ) : (
                 <button
@@ -125,19 +127,22 @@ export const ManualLabelBuilder: React.FC<ManualLabelBuilderProps> = ({ onBack }
                   className="w-full flex flex-col items-center justify-center h-20 border-2 border-dashed border-gray-300 rounded-lg hover:border-brand-green hover:bg-green-50/30 transition-colors"
                 >
                   <Upload className="w-5 h-5 text-gray-400 mb-1" />
-                  <span className="text-xs text-gray-500">Upload PNG / JPEG / SVG</span>
+                  <span className="text-xs text-gray-500">Upload PNG / JPEG (one time)</span>
                 </button>
               )}
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                accept="image/png,image/jpeg,image/jpg"
                 className="hidden"
                 onChange={handleLogoUpload}
+                disabled={logoLocked}
               />
-              <p className="text-xs text-gray-400 mt-2">
-                Shown on every label. PNG/JPEG also embeds in PDF.
-              </p>
+              {logoLocked && (
+                <p className="text-xs text-brand-green mt-2 flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Logo saved permanently.
+                </p>
+              )}
             </div>
 
             {/* Live label preview */}
