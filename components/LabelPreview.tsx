@@ -8,10 +8,10 @@ const FOOTER_PX   = 44;   // space for 20px BELLABONA + optional sub-line
 
 // Font scales DOWN as more fields are present; 30px is the max (1 field)
 const getFs = (count: number): number => {
-  if (count <= 1) return 30;
-  if (count === 2) return 22;
-  if (count === 3) return 16;
-  return 13;   // 4+ fields
+  if (count <= 1) return 28;
+  if (count === 2) return 20;
+  if (count === 3) return 14;
+  return 11;   // 4+ fields
 };
 
 const getCirclePx = (count: number): number => {

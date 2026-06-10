@@ -7,10 +7,10 @@ const BG = { r: 27, g: 94, b: 32 };
 // Mirror LabelPreview.tsx — font scales DOWN as more fields are filled
 // px → pt conversion: pt = px * 0.75
 const getFs = (count: number): number => {
-  if (count <= 1) return 22.5;  // 30px
-  if (count === 2) return 16.5; // 22px
-  if (count === 3) return 12;   // 16px
-  return 9.75;                  // 13px (4+ fields)
+  if (count <= 1) return 21;  // 30px
+  if (count === 2) return 15; // 22px
+  if (count === 3) return 10.5;   // 16px
+  return 8.25;                  // 13px (4+ fields)
 };
 
 // Circle radius in mm (px * 25.4/96 / 2 = radius)
