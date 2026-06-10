@@ -1,7 +1,7 @@
 import React from 'react';
 import { LabelData } from '../types';
 
-export const DEFAULT_LOGO_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MjAgOTAiPgogIDx0ZXh0IHg9IjI2MCIgeT0iNzgiCiAgICB0ZXh0LWFuY2hvcj0ibWlkZGxlIgogICAgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLCBBcmlhbCwgc2Fucy1zZXJpZiIKICAgIGZvbnQtd2VpZ2h0PSI5MDAiCiAgICBmb250LXNpemU9IjgyIgogICAgZmlsbD0iIzFCNUUyMCIKICAgIGxldHRlci1zcGFjaW5nPSItMSI+QkVMTEFCT05BPC90ZXh0Pgo8L3N2Zz4=';
+export const DEFAULT_LOGO_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MjAgOTAiPgogIDx0ZXh0IHg9IjI2MCIgeT0iNzYiCiAgICB0ZXh0LWFuY2hvcj0ibWlkZGxlIgogICAgZm9udC1mYW1pbHk9IkltcGFjdCwgJ0ZyYW5rbGluIEdvdGhpYyBIZWF2eScsICdBcmlhbCBOYXJyb3cnLCBzYW5zLXNlcmlmIgogICAgZm9udC13ZWlnaHQ9IjkwMCIKICAgIGZvbnQtc2l6ZT0iNzgiCiAgICBmaWxsPSIjMUI1RTIwIgogICAgbGV0dGVyLXNwYWNpbmc9IjUiCiAgICB0ZXh0TGVuZ3RoPSI1MTAiCiAgICBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiPkJFTExBQk9OQTwvdGV4dD4KPC9zdmc+';
 
 const BRAND_GREEN = '#1B5E20';
 const FOOTER_PX   = 44;   // space for 20px BELLABONA + optional sub-line
@@ -154,8 +154,9 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1, log
               </p>
             )}
             <p style={{
-              fontSize: '20px', fontWeight: 800, color: BRAND_GREEN,
-              textTransform: 'uppercase', letterSpacing: '2px',
+              fontSize: '20px', fontWeight: 900, color: BRAND_GREEN,
+              fontFamily: "'Barlow Condensed', Impact, 'Arial Narrow', sans-serif",
+              textTransform: 'uppercase', letterSpacing: '3px',
               margin: 0, lineHeight: 1.1
             }}>
               {brandText}
