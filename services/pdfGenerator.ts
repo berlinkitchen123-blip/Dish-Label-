@@ -102,12 +102,24 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
       logoY += 3.5;
     }
 
-    // Logo image in footer (PNG/JPEG only)
+    // Logo image in footer (PNG/JPEG); fallback to styled text for SVG/default
     if (lData && lFmt) {
       try {
         const logoH = 5.5, logoW = logoH * (520/90);
         doc.addImage(lData, lFmt, cx - logoW/2, logoY, logoW, logoH);
-      } catch(_) {}
+      } catch(_) {
+        // image failed — draw text fallback
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        doc.setTextColor(240, 110, 181); // brand pink
+        doc.text("BELLABONA", cx, logoY + 4, { align: "center", charSpace: 1 });
+      }
+    } else {
+      // No PNG/JPEG logo (e.g. default SVG) — draw text
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(240, 110, 181); // brand pink
+      doc.text("BELLABONA", cx, logoY + 4, { align: "center", charSpace: 1 });
     }
 
     // ── Main content: centred in zone between top of box and separator ────────
