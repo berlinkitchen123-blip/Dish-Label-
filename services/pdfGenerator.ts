@@ -4,20 +4,6 @@ import { DEFAULT_LOGO_URL } from "../components/LabelPreview";
 
 const BG = { r: 27, g: 94, b: 32 };
 
-// Scale font sizes based on how many content fields are present
-const getFs = (count: number) => {
-  if (count === 1) return 11;   // single field — large
-  if (count === 2) return 9.5;
-  if (count === 3) return 8.5;
-  return 7.5;                   // 4+ — compact
-};
-
-const getCircleR = (count: number) => {
-  if (count <= 1) return 6;
-  if (count === 2) return 5;
-  return 4;
-};
-
 const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
@@ -28,7 +14,9 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
   const boxW = (pageW - 2*marginX - (columns-1)*gapX) / columns;
   const boxH = (pageH - 2*marginY - (rowsPerPage-1)*gapY) / rowsPerPage;
   const cornerR = 2;
-  const footerH = 6.5;   // mm reserved for separator + BELLABONA + optional sub-line
+
+  // 20px BELLABONA ≈ 15pt ≈ 5.3mm line height → footerH needs ~9mm
+  const footerH = 9.5;
 
   const eLogo = logoUrl ?? DEFAULT_LOGO_URL;
   let lFmt: string | null = null, lData: string | null = null;
@@ -49,7 +37,7 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
     const y   = marginY + Math.floor(pos / columns)  * (boxH + gapY);
     const cx  = x + boxW / 2;
 
-    // Box
+    // Box border
     doc.setDrawColor(200, 200, 200);
     doc.setLineWidth(0.1);
     doc.roundedRect(x, y, boxW, boxH, cornerR, cornerR);
@@ -72,100 +60,94 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
     const allerg   = (item.allergens   ||"").trim().toUpperCase();
     const brand    = (item.brand       ||"BELLABONA").toUpperCase();
 
-    // Count content items to determine font sizes
-    const count = [customer, dishName, letter].filter(Boolean).length;
-    const fs    = getFs(count);
-    const cr    = getCircleR(count);
-
-    // ── Footer (pinned bottom) ─────────────────────────────────────────────
+    // ── Footer: separator + BELLABONA 15pt + optional sub ────────────────────
     const sepY = y + boxH - footerH;
-
-    // Separator line
     doc.setDrawColor(BG.r, BG.g, BG.b);
-    doc.setLineWidth(0.25);
+    doc.setLineWidth(0.3);
     doc.line(x+4, sepY, x+boxW-4, sepY);
 
-    // BELLABONA in brand green
+    // BELLABONA at 15pt in brand green
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(6.5);
+    doc.setFontSize(15);
     doc.setTextColor(BG.r, BG.g, BG.b);
-    doc.text(brand, cx, y+boxH-1.5, { align: "center" });
+    doc.text(brand, cx, y+boxH-1.8, { align: "center" });
 
-    // Dish type · allergens (small grey, above BELLABONA)
+    // Dish type · allergens at 7pt above BELLABONA
     if (dtype || allerg) {
       const sub = [dtype, allerg].filter(Boolean).join(" · ");
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(5.5);
+      doc.setFontSize(7);
       doc.setTextColor(90, 90, 90);
       let t = sub;
       while (t.length > 1 && doc.getTextWidth(t) > boxW-4) t = t.slice(0,-1);
       if (t !== sub) t += "…";
-      doc.text(t, cx, y+boxH-4.8, { align: "center" });
+      doc.text(t, cx, sepY + 2.5, { align: "center" });
     }
 
-    // ── Main content: centred between top padding and separator ───────────
+    // ── Main content at 22.5pt (≈30px), centred between top and separator ────
+    const MAIN_PT  = 22.5;   // 30px → pt
+    const lineH_mm = MAIN_PT * 0.352778 * 1.25;  // pt→mm × line-height factor
+
     const contentTop = y + 2;
     const contentBot = sepY - 1;
     const contentMid = (contentTop + contentBot) / 2;
 
-    // Measure total height
     let totalH = 0;
     let nameLines: string[] = [];
-    const gap = count === 1 ? 2 : 1.5;
-    const lineH = fs * 0.352778 * 1.3;   // pt → mm × line-height
+    const gap = 2;
 
-    if (customer) totalH += lineH;
+    if (customer) totalH += lineH_mm;
     if (customer && (dishName||letter)) totalH += gap;
     if (dishName) {
-      doc.setFontSize(fs);
-      nameLines = doc.splitTextToSize(dishName, boxW - 5);
-      const maxLines = count === 1 ? 3 : 2;
-      if (nameLines.length > maxLines) nameLines = nameLines.slice(0, maxLines);
-      totalH += nameLines.length * lineH;
+      doc.setFontSize(MAIN_PT);
+      nameLines = doc.splitTextToSize(dishName, boxW - 4);
+      if (nameLines.length > 2) nameLines = nameLines.slice(0, 2);
+      totalH += nameLines.length * lineH_mm;
     }
     if (dishName && letter) totalH += gap;
-    if (letter) totalH += (letter.length > 2 ? cr*1.5 : cr*2);
+    if (letter) totalH += (letter.length > 2 ? 8 : 11);  // box=8mm, circle=11mm
 
     let dy = contentMid - totalH / 2;
 
     // Customer name
     if (customer) {
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(fs);
+      doc.setFontSize(MAIN_PT);
       doc.setTextColor(0, 0, 0);
-      doc.text(customer, cx, dy + lineH*0.75, { align: "center" });
-      dy += lineH;
+      doc.text(customer, cx, dy + lineH_mm * 0.8, { align: "center" });
+      dy += lineH_mm;
       if (dishName||letter) dy += gap;
     }
 
     // Dish name
     if (dishName) {
-      doc.setFont("helvetica", count===1 ? "bold" : "normal");
-      doc.setFontSize(fs);
+      doc.setFont("helvetica", customer ? "normal" : "bold");
+      doc.setFontSize(MAIN_PT);
       doc.setTextColor(20, 20, 20);
-      doc.setLineHeightFactor(1.3);
-      doc.text(nameLines, cx, dy + lineH*0.75, { align: "center" });
+      doc.setLineHeightFactor(1.25);
+      doc.text(nameLines, cx, dy + lineH_mm * 0.8, { align: "center" });
       doc.setLineHeightFactor(1.15);
-      dy += nameLines.length * lineH;
+      dy += nameLines.length * lineH_mm;
       if (letter) dy += gap;
     }
 
     // Dish letter
     if (letter) {
-      doc.setDrawColor(0,0,0);
-      doc.setLineWidth(0.35);
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.4);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(0,0,0);
+      doc.setTextColor(0, 0, 0);
       if (letter.length > 2) {
-        doc.setFontSize(fs - 1);
+        doc.setFontSize(18);
         const tw = doc.getTextWidth(letter);
-        const bw = Math.max(tw+6,10), bh = cr*1.5;
-        doc.roundedRect(cx-bw/2, dy, bw, bh, 1, 1);
+        const bw = Math.max(tw+8, 14), bh = 8;
+        doc.roundedRect(cx-bw/2, dy, bw, bh, 1.5, 1.5);
         doc.text(letter, cx, dy+bh/2, { align:"center", baseline:"middle" });
       } else {
-        doc.circle(cx, dy+cr, cr);
-        doc.setFontSize(fs + (count<=1?2:0));
-        doc.text(letter, cx, dy+cr, { align:"center", baseline:"middle" });
+        const r = 5.5;
+        doc.circle(cx, dy+r, r);
+        doc.setFontSize(20);
+        doc.text(letter, cx, dy+r, { align:"center", baseline:"middle" });
       }
     }
   });
