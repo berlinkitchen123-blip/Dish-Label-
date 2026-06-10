@@ -4,7 +4,22 @@ import { LabelData } from '../types';
 export const DEFAULT_LOGO_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MjAgOTAiPgogIDx0ZXh0IHg9IjI2MCIgeT0iNzgiCiAgICB0ZXh0LWFuY2hvcj0ibWlkZGxlIgogICAgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLCBBcmlhbCwgc2Fucy1zZXJpZiIKICAgIGZvbnQtd2VpZ2h0PSI5MDAiCiAgICBmb250LXNpemU9IjgyIgogICAgZmlsbD0iIzFCNUUyMCIKICAgIGxldHRlci1zcGFjaW5nPSItMSI+QkVMTEFCT05BPC90ZXh0Pgo8L3N2Zz4=';
 
 const BRAND_GREEN = '#1B5E20';
-const FOOTER_PX   = 26;   // px reserved for footer (separator + text)
+const FOOTER_PX   = 26;
+
+// Returns font size (px) for the main content area based on how many fields are filled
+const getContentFontSize = (count: number) => {
+  if (count === 0) return 14;
+  if (count === 1) return 20;   // just one thing → large
+  if (count === 2) return 16;
+  if (count === 3) return 13;
+  return 11;                    // 4+ fields → compact
+};
+
+const getCircleSize = (count: number) => {
+  if (count <= 1) return 36;    // big circle
+  if (count === 2) return 30;
+  return 24;
+};
 
 interface LabelPreviewProps {
   data: LabelData;
@@ -21,6 +36,12 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1, log
   const brandText    = (data.brand       || 'BELLABONA').toUpperCase();
   const logo         = logoUrl ?? DEFAULT_LOGO_URL;
 
+  // Count how many main content fields are present
+  const contentItems = [customerName, dishName, dishLetter].filter(Boolean);
+  const count        = contentItems.length;
+  const fs           = getContentFontSize(count);
+  const circleSize   = getCircleSize(count);
+
   return (
     <div
       className="flex flex-col items-center mx-auto"
@@ -35,24 +56,31 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1, log
           boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
         }}
       >
-        {/* ── Watermark: Bellabona logo, centred, subtle ── */}
+        {/* ── Watermark ── */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
              style={{ paddingBottom: `${FOOTER_PX}px` }}>
           <img src={logo} alt="" draggable={false}
             style={{ width: '82%', objectFit: 'contain', opacity: 0.10 }} />
         </div>
 
-        {/* ── Main content: centred in full label, padded below for footer ── */}
+        {/* ── Main content: fills space above footer, font scales with content count ── */}
         <div
-          className="absolute inset-x-0 top-0 flex flex-col items-center justify-center gap-1 px-3"
+          className="absolute inset-x-0 top-0 flex flex-col items-center justify-center gap-1.5 px-3"
           style={{ bottom: `${FOOTER_PX}px`, zIndex: 10 }}
         >
           {customerName && (
             <span style={{
-              fontSize: '15px', fontWeight: 900, letterSpacing: '-0.3px',
-              textTransform: 'uppercase', lineHeight: 1.2,
-              color: '#111', textAlign: 'center', maxWidth: '100%',
-              overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis'
+              fontSize: `${fs}px`,
+              fontWeight: 900,
+              letterSpacing: count === 1 ? '-0.5px' : '-0.3px',
+              textTransform: 'uppercase',
+              lineHeight: 1.15,
+              color: '#111',
+              textAlign: 'center',
+              maxWidth: '100%',
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis'
             }}>
               {customerName}
             </span>
@@ -60,34 +88,47 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1, log
 
           {dishName && (
             <p style={{
-              fontSize: '13px', fontWeight: 400, lineHeight: 1.35,
-              color: '#222', textAlign: 'center',
-              display: '-webkit-box', WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical', overflow: 'hidden',
-              maxWidth: '100%', margin: 0
+              fontSize: `${fs}px`,
+              fontWeight: count === 1 ? 600 : 400,
+              lineHeight: 1.3,
+              color: '#222',
+              textAlign: 'center',
+              margin: 0,
+              maxWidth: '100%',
+              display: '-webkit-box',
+              WebkitLineClamp: count === 1 ? 3 : 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
             }}>
               {dishName}
             </p>
           )}
 
           {dishLetter && (
-            <div style={{ marginTop: dishName ? '2px' : 0 }}>
+            <div style={{ marginTop: count > 1 ? '1px' : '2px' }}>
               {dishLetter.length > 2 ? (
                 <div style={{
-                  border: '1.5px solid #111', borderRadius: '4px',
-                  padding: '2px 8px', display: 'inline-flex', alignItems: 'center'
+                  border: `${count <= 2 ? 2 : 1.5}px solid #111`,
+                  borderRadius: '5px',
+                  padding: `${count <= 2 ? '3px 10px' : '2px 7px'}`,
+                  display: 'inline-flex',
+                  alignItems: 'center'
                 }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>
+                  <span style={{ fontSize: `${fs - 1}px`, fontWeight: 700, letterSpacing: '0.5px' }}>
                     {dishLetter}
                   </span>
                 </div>
               ) : (
                 <div style={{
-                  width: '28px', height: '28px', borderRadius: '50%',
-                  border: '1.5px solid #111',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  width:  `${circleSize}px`,
+                  height: `${circleSize}px`,
+                  borderRadius: '50%',
+                  border: `${count <= 2 ? 2 : 1.5}px solid #111`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}>
-                  <span style={{ fontSize: '15px', fontWeight: 700, lineHeight: 1 }}>
+                  <span style={{ fontSize: `${circleSize * 0.55}px`, fontWeight: 700, lineHeight: 1 }}>
                     {dishLetter}
                   </span>
                 </div>
@@ -96,30 +137,29 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1, log
           )}
         </div>
 
-        {/* ── Footer: separator line + brand info ── */}
+        {/* ── Footer: separator + BELLABONA + optional meta ── */}
         <div className="absolute bottom-0 inset-x-0" style={{ zIndex: 10 }}>
-          {/* Separator */}
           <div style={{
-            height: '0.75px', margin: '0 12px',
-            backgroundColor: BRAND_GREEN, opacity: 0.35
+            height: '0.75px',
+            margin: '0 10px',
+            backgroundColor: BRAND_GREEN,
+            opacity: 0.4
           }} />
-
-          {/* Brand block */}
           <div style={{ padding: '3px 8px 4px', textAlign: 'center' }}>
             {(dishType || allergens) && (
               <p style={{
-                fontSize: '7px', fontWeight: 700, color: '#444',
-                textTransform: 'uppercase', letterSpacing: '0.4px',
-                margin: 0, lineHeight: 1.4,
+                fontSize: '6.5px', fontWeight: 700, color: '#555',
+                textTransform: 'uppercase', letterSpacing: '0.5px',
+                margin: '0 0 1px', lineHeight: 1.3,
                 overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis'
               }}>
                 {[dishType, allergens].filter(Boolean).join(' · ')}
               </p>
             )}
             <p style={{
-              fontSize: '8px', fontWeight: 800, color: BRAND_GREEN,
-              textTransform: 'uppercase', letterSpacing: '2px',
-              margin: 0, lineHeight: 1.4
+              fontSize: '7.5px', fontWeight: 800, color: BRAND_GREEN,
+              textTransform: 'uppercase', letterSpacing: '2.5px',
+              margin: 0, lineHeight: 1.3
             }}>
               {brandText}
             </p>
