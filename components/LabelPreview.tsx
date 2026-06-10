@@ -63,8 +63,24 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1, log
           paddingBottom: `${FOOTER_PX}px`,
           pointerEvents: 'none', userSelect: 'none'
         }}>
-          <img src={logo} alt="" draggable={false}
-            style={{ width: '80%', objectFit: 'contain', opacity: 0.10 }} />
+          {logoUrl ? (
+            <img src={logo} alt="" draggable={false}
+              style={{ width: '80%', objectFit: 'contain', opacity: 0.10 }} />
+          ) : (
+            <span style={{
+              fontFamily: "'Bebas Neue', 'Barlow Condensed', Impact, sans-serif",
+              fontWeight: 400,
+              fontSize: '36px',
+              letterSpacing: '4px',
+              color: BRAND_GREEN,
+              opacity: 0.10,
+              textTransform: 'uppercase',
+              whiteSpace: 'nowrap',
+              userSelect: 'none'
+            }}>
+              BELLABONA
+            </span>
+          )}
         </div>
 
         {/* ── Main content: centred in the zone above footer ── */}
@@ -155,7 +171,7 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1, log
             )}
             <p style={{
               fontSize: '20px', fontWeight: 900, color: BRAND_GREEN,
-              fontFamily: "'Barlow Condensed', Impact, 'Arial Narrow', sans-serif",
+              fontFamily: "'Bebas Neue', 'Barlow Condensed', Impact, sans-serif",
               textTransform: 'uppercase', letterSpacing: '3px',
               margin: 0, lineHeight: 1.1
             }}>
