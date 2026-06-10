@@ -57,18 +57,6 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
     doc.setDrawColor(200, 200, 200);
     doc.setLineWidth(0.1);
     doc.roundedRect(x, y, boxW, boxH, cornerR, cornerR);
-
-    // Watermark
-    if (lData && lFmt) {
-      try {
-        doc.saveGraphicsState();
-        (doc as any).setGState(new (doc as any).GState({ opacity: 0.10 }));
-        const ww = 44, wh = 7;
-        doc.addImage(lData, lFmt, cx-ww/2, y+(boxH-footerH-wh)/2, ww, wh);
-        doc.restoreGraphicsState();
-      } catch(_) {}
-    }
-
     const customer = (item.customerName||"").trim().toUpperCase();
     const dishName = (item.dishName    ||"").trim();
     const letter   = (item.dishLetter  ||"").toUpperCase().trim();

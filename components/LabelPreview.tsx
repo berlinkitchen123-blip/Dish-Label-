@@ -55,32 +55,6 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1, log
           overflow: 'hidden'         // hard clip — nothing escapes the label
         }}
       >
-        {/* ── Watermark ── */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          paddingBottom: `${FOOTER_PX}px`,
-          pointerEvents: 'none', userSelect: 'none'
-        }}>
-          {logoUrl ? (
-            <img src={logo} alt="" draggable={false}
-              style={{ width: '80%', objectFit: 'contain', opacity: 0.10 }} />
-          ) : (
-            <span style={{
-              fontFamily: "'Bebas Neue', 'Barlow Condensed', Impact, sans-serif",
-              fontWeight: 400,
-              fontSize: '36px',
-              letterSpacing: '4px',
-              color: BRAND_GREEN,
-              opacity: 0.10,
-              textTransform: 'uppercase',
-              whiteSpace: 'nowrap',
-              userSelect: 'none'
-            }}>
-              BELLABONA
-            </span>
-          )}
-        </div>
 
         {/* ── Main content: centred in the zone above footer ── */}
         <div style={{
