@@ -4,6 +4,23 @@ import { DEFAULT_LOGO_URL } from "../components/LabelPreview";
 
 const BG = { r: 27, g: 94, b: 32 };
 
+// Mirror LabelPreview.tsx — font scales DOWN as more fields are filled
+// px → pt conversion: pt = px * 0.75
+const getFs = (count: number): number => {
+  if (count <= 1) return 22.5;  // 30px
+  if (count === 2) return 16.5; // 22px
+  if (count === 3) return 12;   // 16px
+  return 9.75;                  // 13px (4+ fields)
+};
+
+// Circle radius in mm (px * 25.4/96 / 2 = radius)
+const getCircleR = (count: number): number => {
+  if (count <= 1) return 5.8;   // 44px circle
+  if (count === 2) return 4.5;  // 34px
+  if (count === 3) return 3.7;  // 28px
+  return 2.9;                   // 22px
+};
+
 const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
@@ -15,8 +32,7 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
   const boxH = (pageH - 2*marginY - (rowsPerPage-1)*gapY) / rowsPerPage;
   const cornerR = 2;
 
-  // 20px BELLABONA ≈ 15pt ≈ 5.3mm line height → footerH needs ~9mm
-  const footerH = 9.5;
+  const footerH = 9.5; // space for BELLABONA 15pt + optional sub-line
 
   const eLogo = logoUrl ?? DEFAULT_LOGO_URL;
   let lFmt: string | null = null, lData: string | null = null;
@@ -48,7 +64,7 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
         doc.saveGraphicsState();
         (doc as any).setGState(new (doc as any).GState({ opacity: 0.10 }));
         const ww = 44, wh = 7;
-        doc.addImage(lData, lFmt, cx-ww/2, y+(boxH-wh)/2, ww, wh);
+        doc.addImage(lData, lFmt, cx-ww/2, y+(boxH-footerH-wh)/2, ww, wh);
         doc.restoreGraphicsState();
       } catch(_) {}
     }
@@ -59,6 +75,13 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
     const dtype    = (item.dishType    ||"").trim().toUpperCase();
     const allerg   = (item.allergens   ||"").trim().toUpperCase();
     const brand    = (item.brand       ||"BELLABONA").toUpperCase();
+
+    // Count of filled main fields (same logic as LabelPreview)
+    const count = [customer, dishName, letter].filter(Boolean).length;
+    const MAIN_PT  = getFs(count);
+    const circleR  = getCircleR(count);
+    const lineH_mm = MAIN_PT * 0.352778 * 1.25;  // pt→mm × line-height factor
+    const gap      = count <= 1 ? 2.5 : count === 2 ? 1.5 : 1;
 
     // ── Footer: separator + BELLABONA 15pt + optional sub ────────────────────
     const sepY = y + boxH - footerH;
@@ -84,17 +107,14 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
       doc.text(t, cx, sepY + 2.5, { align: "center" });
     }
 
-    // ── Main content at 22.5pt (≈30px), centred between top and separator ────
-    const MAIN_PT  = 22.5;   // 30px → pt
-    const lineH_mm = MAIN_PT * 0.352778 * 1.25;  // pt→mm × line-height factor
-
+    // ── Main content: centred in zone between top of box and separator ────────
     const contentTop = y + 2;
     const contentBot = sepY - 1;
     const contentMid = (contentTop + contentBot) / 2;
 
+    // Pre-calculate total height of all content blocks
     let totalH = 0;
     let nameLines: string[] = [];
-    const gap = 2;
 
     if (customer) totalH += lineH_mm;
     if (customer && (dishName||letter)) totalH += gap;
@@ -105,8 +125,11 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
       totalH += nameLines.length * lineH_mm;
     }
     if (dishName && letter) totalH += gap;
-    if (letter) totalH += (letter.length > 2 ? 8 : 11);  // box=8mm, circle=11mm
+    if (letter) {
+      totalH += (letter.length > 2 ? 8 : circleR * 2);
+    }
 
+    // Start drawing from vertical centre
     let dy = contentMid - totalH / 2;
 
     // Customer name
@@ -114,7 +137,11 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(MAIN_PT);
       doc.setTextColor(0, 0, 0);
-      doc.text(customer, cx, dy + lineH_mm * 0.8, { align: "center" });
+      // Truncate if too wide
+      let cust = customer;
+      while (cust.length > 1 && doc.getTextWidth(cust) > boxW - 4) cust = cust.slice(0,-1);
+      if (cust !== customer) cust += "…";
+      doc.text(cust, cx, dy + lineH_mm * 0.8, { align: "center" });
       dy += lineH_mm;
       if (dishName||letter) dy += gap;
     }
@@ -131,23 +158,23 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
       if (letter) dy += gap;
     }
 
-    // Dish letter
+    // Dish letter: circle or rounded box
     if (letter) {
       doc.setDrawColor(0, 0, 0);
       doc.setLineWidth(0.4);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(0, 0, 0);
       if (letter.length > 2) {
-        doc.setFontSize(18);
+        const fpt = Math.max(MAIN_PT - 1.5, 8);
+        doc.setFontSize(fpt);
         const tw = doc.getTextWidth(letter);
-        const bw = Math.max(tw+8, 14), bh = 8;
+        const bw = Math.max(tw+6, 12), bh = 8;
         doc.roundedRect(cx-bw/2, dy, bw, bh, 1.5, 1.5);
         doc.text(letter, cx, dy+bh/2, { align:"center", baseline:"middle" });
       } else {
-        const r = 5.5;
-        doc.circle(cx, dy+r, r);
-        doc.setFontSize(20);
-        doc.text(letter, cx, dy+r, { align:"center", baseline:"middle" });
+        doc.circle(cx, dy + circleR, circleR);
+        doc.setFontSize(circleR * 3.5);  // ~55% of diameter in pt
+        doc.text(letter, cx, dy + circleR, { align:"center", baseline:"middle" });
       }
     }
   });
