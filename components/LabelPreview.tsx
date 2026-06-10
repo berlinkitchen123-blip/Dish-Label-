@@ -132,14 +132,14 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1, log
             backgroundColor: BRAND_GREEN, opacity: 0.45
           }} />
           <div style={{ padding: '2px 8px 4px', textAlign: 'center' }}>
-            {(dishType || allergens) && (
+            {allergens && (
               <p style={{
                 fontSize: '9px', fontWeight: 700, color: '#555',
                 textTransform: 'uppercase', letterSpacing: '0.4px',
                 margin: '0 0 1px', lineHeight: 1.2,
                 overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis'
               }}>
-                {[dishType, allergens].filter(Boolean).join(' · ')}
+                {allergens}
               </p>
             )}
             <img

@@ -79,16 +79,15 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
     doc.setLineWidth(0.3);
     doc.line(x+4, sepY, x+boxW-4, sepY);
 
-    // Dish type · allergens at 7pt (first line of footer)
+    // Allergens only above logo (dishType/HOT/COLD removed)
     let logoY = sepY + 1.5;
-    if (dtype || allerg) {
-      const sub = [dtype, allerg].filter(Boolean).join(" · ");
+    if (allerg) {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(7);
       doc.setTextColor(90, 90, 90);
-      let t = sub;
+      let t = allerg;
       while (t.length > 1 && doc.getTextWidth(t) > boxW-4) t = t.slice(0,-1);
-      if (t !== sub) t += "…";
+      if (t !== allerg) t += "…";
       doc.text(t, cx, logoY + 1.5, { align: "center" });
       logoY += 3.5;
     }
