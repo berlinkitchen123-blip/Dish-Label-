@@ -33,7 +33,6 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1, log
   const dishName     = (data.dishName    || '').trim();
   const dishType     = (data.dishType    || '').toUpperCase().trim();
   const allergens    = (data.allergens   || '').toUpperCase().trim();
-  const brandText    = 'BELLABONA';
   const logo         = logoUrl ?? DEFAULT_LOGO_URL;
 
   const count    = [customerName, dishName, dishLetter].filter(Boolean).length;
@@ -149,7 +148,7 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1, log
           )}
         </div>
 
-        {/* ── Footer: always 20px BELLABONA, pinned at bottom ── */}
+        {/* ── Footer: logo image + optional allergens/type, pinned at bottom ── */}
         <div style={{
           position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 10
         }}>
@@ -158,7 +157,7 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1, log
             height: '1px', margin: '0 10px',
             backgroundColor: BRAND_GREEN, opacity: 0.45
           }} />
-          <div style={{ padding: '3px 8px 5px', textAlign: 'center' }}>
+          <div style={{ padding: '2px 8px 4px', textAlign: 'center' }}>
             {(dishType || allergens) && (
               <p style={{
                 fontSize: '9px', fontWeight: 700, color: '#555',
@@ -169,14 +168,17 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({ data, scale = 1, log
                 {[dishType, allergens].filter(Boolean).join(' · ')}
               </p>
             )}
-            <p style={{
-              fontSize: '20px', fontWeight: 900, color: BRAND_GREEN,
-              fontFamily: "'Bebas Neue', 'Barlow Condensed', Impact, sans-serif",
-              textTransform: 'uppercase', letterSpacing: '3px',
-              margin: 0, lineHeight: 1.1
-            }}>
-              {brandText}
-            </p>
+            <img
+              src={logo}
+              alt="Bellabona"
+              draggable={false}
+              style={{
+                maxHeight: '22px', maxWidth: '90%',
+                objectFit: 'contain',
+                display: 'inline-block',
+                mixBlendMode: 'multiply'
+              }}
+            />
           </div>
         </div>
       </div>

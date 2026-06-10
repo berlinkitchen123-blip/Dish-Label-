@@ -74,7 +74,6 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
     const letter   = (item.dishLetter  ||"").toUpperCase().trim();
     const dtype    = (item.dishType    ||"").trim().toUpperCase();
     const allerg   = (item.allergens   ||"").trim().toUpperCase();
-    const brand    = 'BELLABONA';
 
     // Count of filled main fields (same logic as LabelPreview)
     const count = [customer, dishName, letter].filter(Boolean).length;
@@ -83,19 +82,14 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
     const lineH_mm = MAIN_PT * 0.352778 * 1.25;  // pt→mm × line-height factor
     const gap      = count <= 1 ? 2.5 : count === 2 ? 1.5 : 1;
 
-    // ── Footer: separator + BELLABONA 15pt + optional sub ────────────────────
+    // ── Footer: separator + logo image + optional sub ────────────────────────
     const sepY = y + boxH - footerH;
     doc.setDrawColor(BG.r, BG.g, BG.b);
     doc.setLineWidth(0.3);
     doc.line(x+4, sepY, x+boxW-4, sepY);
 
-    // BELLABONA at 15pt in brand green
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(15);
-    doc.setTextColor(BG.r, BG.g, BG.b);
-    doc.text(brand, cx, y+boxH-1.8, { align: "center" });
-
-    // Dish type · allergens at 7pt above BELLABONA
+    // Dish type · allergens at 7pt (first line of footer)
+    let logoY = sepY + 1.5;
     if (dtype || allerg) {
       const sub = [dtype, allerg].filter(Boolean).join(" · ");
       doc.setFont("helvetica", "bold");
@@ -104,7 +98,16 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
       let t = sub;
       while (t.length > 1 && doc.getTextWidth(t) > boxW-4) t = t.slice(0,-1);
       if (t !== sub) t += "…";
-      doc.text(t, cx, sepY + 2.5, { align: "center" });
+      doc.text(t, cx, logoY + 1.5, { align: "center" });
+      logoY += 3.5;
+    }
+
+    // Logo image in footer (PNG/JPEG only)
+    if (lData && lFmt) {
+      try {
+        const logoH = 5.5, logoW = logoH * (520/90);
+        doc.addImage(lData, lFmt, cx - logoW/2, logoY, logoW, logoH);
+      } catch(_) {}
     }
 
     // ── Main content: centred in zone between top of box and separator ────────
