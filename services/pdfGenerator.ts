@@ -35,7 +35,7 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
   const startY  = 15.5;
   const cornerR = 2;
 
-  const footerH = 6.5; // just the logo image
+  const footerH = 9; // logo image with padding
 
   const eLogo = logoUrl ?? DEFAULT_LOGO_URL;
   let lFmt: string | null = null, lData: string | null = null;
@@ -85,7 +85,7 @@ const createPDFDoc = (data: LabelData[], logoUrl?: string): jsPDF => {
     // Logo image in footer (PNG/JPEG); fallback to styled text for SVG/default
     if (lData && lFmt) {
       try {
-        const logoH = 5.5, logoW = logoH * (520/90);
+        const logoH = 7, logoW = logoH * (520/90);
         doc.addImage(lData, lFmt, cx - logoW/2, logoY, logoW, logoH);
       } catch(_) {
         // image failed — draw text fallback
