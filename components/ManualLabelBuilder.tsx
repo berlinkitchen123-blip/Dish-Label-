@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { LabelPreview, DEFAULT_LOGO_URL } from "./LabelPreview";
 import { downloadPDF, printPDF } from '../services/pdfGenerator';
+import { downloadSampleExcel, parseExcelToLabels } from '../services/excelHandler';
 import { LabelData } from '../types';
-import { Plus, Trash2, Download, Printer, ArrowLeft, Copy } from 'lucide-react';
+import { Plus, Trash2, Download, Printer, ArrowLeft, Copy, FileSpreadsheet, Upload } from 'lucide-react';
 
 interface ManualLabelBuilderProps {
   onBack: () => void;
@@ -24,6 +25,22 @@ export const ManualLabelBuilder: React.FC<ManualLabelBuilderProps> = ({ onBack }
   const [rows, setRows] = useState<LabelData[]>([newRow()]);
   const logoUrl = DEFAULT_LOGO_URL;
   const [previewIndex, setPreviewIndex] = useState(0);
+  const excelInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const labels = await parseExcelToLabels(file);
+      if (labels.length > 0) {
+        setRows(labels);
+        setPreviewIndex(0);
+      }
+    } catch {
+      alert('Could not read the Excel file. Please use the sample format.');
+    }
+    e.target.value = '';
+  };
 
   const addRow = () => {
     setRows(prev => [...prev, newRow()]);
@@ -71,6 +88,23 @@ export const ManualLabelBuilder: React.FC<ManualLabelBuilderProps> = ({ onBack }
           </div>
           <div className="flex items-center space-x-3">
             <span className="text-sm text-gray-500">{totalLabels} labels</span>
+            <button
+              onClick={downloadSampleExcel}
+              className="flex items-center space-x-2 bg-white border border-gray-300 px-4 py-2 rounded-lg font-medium hover:bg-gray-50 text-sm"
+              title="Download sample Excel template"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-green-600" />
+              <span>Sample Excel</span>
+            </button>
+            <button
+              onClick={() => excelInputRef.current?.click()}
+              className="flex items-center space-x-2 bg-white border border-gray-300 px-4 py-2 rounded-lg font-medium hover:bg-gray-50 text-sm"
+              title="Upload Excel to import labels"
+            >
+              <Upload className="w-4 h-4 text-blue-500" />
+              <span>Upload Excel</span>
+            </button>
+            <input ref={excelInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleExcelUpload} />
             <button
               onClick={() => downloadPDF(rows, logoUrl ?? undefined)}
               className="flex items-center space-x-2 bg-white border border-gray-300 px-4 py-2 rounded-lg font-medium hover:bg-gray-50 text-sm"
