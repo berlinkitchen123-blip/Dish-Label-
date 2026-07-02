@@ -1,30 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FileUpload } from './components/FileUpload';
 import { LabelPreview } from './components/LabelPreview';
-import { ManualLabelBuilder } from './components/ManualLabelBuilder';
 import { downloadPDF, printPDF } from './services/pdfGenerator';
 import { LabelData, RawJsonItem, FieldMapping, MappingKey } from './types';
-import { Printer, RefreshCcw, ArrowRight, Settings2, Download, PenLine } from 'lucide-react';
-
-type AppMode = 'json' | 'manual';
+import { Printer, RefreshCcw, Check, ArrowRight, Settings2, Download, Info } from 'lucide-react';
 
 const App: React.FC = () => {
-  const [mode, setMode] = useState<AppMode>('json');
-
   const [rawData, setRawData] = useState<RawJsonItem[]>([]);
   const [mappedData, setMappedData] = useState<LabelData[]>([]);
-
-  const [mapping, setMapping] = useState<FieldMapping>({
-    customerName: '',
-    dishLetter: '',
-    dishType: '',
-    dishName: '',
-    allergens: '',
-    brand: ''
+  
+  // Updated Mapping State for 6 fields
+  const [mapping, setMapping] = useState<FieldMapping>({ 
+    customerName: '', 
+    dishLetter: '', 
+    dishType: '', 
+    dishName: '', 
+    allergens: '', 
+    brand: '' 
   });
-
+  
   const [keys, setKeys] = useState<string[]>([]);
-  const [step, setStep] = useState<number>(1);
+  const [step, setStep] = useState<number>(1); 
 
   // Helper to flatten the nested specific JSON structure
   const preprocessNestedData = (data: any[]): any[] => {
@@ -34,26 +30,23 @@ const App: React.FC = () => {
     data.forEach(item => {
       if (item.boxes && Array.isArray(item.boxes)) {
         isNested = true;
-        const footerName = item.deliveryName || item.name || "Unknown";
+        const footerName = item.deliveryName || item.name || "Unknown"; // e.g. Restaurant Name
 
         item.boxes.forEach((box: any) => {
           const boxType = box.type || "";
-
+          
           if (box.dishes && Array.isArray(box.dishes)) {
             box.dishes.forEach((dish: any) => {
+              // Extract potential fields
               const dishName = dish.name || "";
               const dishLabel = dish.label || "";
-              const recipeType = dish.recipeType || dish.type || boxType || "";
-              const allergens = dish.allergens
-                ? (Array.isArray(dish.allergens) ? dish.allergens.join(", ") : dish.allergens)
-                : "";
-
+              const recipeType = dish.recipeType || dish.type || boxType || ""; 
+              const allergens = dish.allergens ? (Array.isArray(dish.allergens) ? dish.allergens.join(", ") : dish.allergens) : "";
+              
               if (dish.users && Array.isArray(dish.users) && dish.users.length > 0) {
                 dish.users.forEach((user: any) => {
-                  // BUG 4 FIX: orderedQuantity=0 means user didn't order — skip them.
-                  // Only fall back to 1 when the field is missing (null/undefined).
-                  const qty = (user.orderedQuantity != null) ? Number(user.orderedQuantity) : 1;
-
+                  const qty = Number(user.orderedQuantity) || 1; // Fallback to 1 if missing or 0 to map properly
+                  
                   for (let i = 0; i < qty; i++) {
                     flatList.push({
                       "Customer Name": user.username || user.email || "",
@@ -62,7 +55,7 @@ const App: React.FC = () => {
                       "Dish Name": dishName,
                       "Allergens": allergens,
                       "Restaurant": footerName,
-                      _initialQty: 1
+                      _initialQty: 1 
                     });
                   }
                 });
@@ -95,16 +88,12 @@ const App: React.FC = () => {
     if (processedData.length > 0) {
       const availableKeys = Object.keys(processedData[0]).filter(k => k !== '_initialQty');
       setKeys(availableKeys);
-
-      // BUG 3 FIX: track already-used keys so two fields can't map to the same JSON key.
-      const usedKeys = new Set<string>();
+      
+      // Smart Auto-Mapping - prioritize keywords sequentially
       const getKey = (keywords: string[]) => {
         for (const w of keywords) {
-          const match = availableKeys.find(k => !usedKeys.has(k) && k.toLowerCase().includes(w));
-          if (match) {
-            usedKeys.add(match);
-            return match;
-          }
+          const match = availableKeys.find(k => k.toLowerCase().includes(w));
+          if (match) return match;
         }
         return '';
       };
@@ -117,9 +106,10 @@ const App: React.FC = () => {
         allergens: getKey(['allergen']),
         brand: getKey(['brand', 'company', 'restaurant', 'bellabona'])
       };
-
+      
+      // Fallbacks if not found
       if (!newMapping.dishName) newMapping.dishName = availableKeys[0] || '';
-
+      
       setMapping(newMapping);
       setStep(2);
     }
@@ -127,26 +117,21 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (rawData.length === 0) return;
-
+    
     setMappedData(prevMapped => {
       return rawData.map((item, idx) => {
-        const existingQty = prevMapped[idx] && prevMapped.length === rawData.length
-          ? prevMapped[idx].quantity
-          : null;
+        const existingQty = prevMapped[idx] && prevMapped.length === rawData.length ? prevMapped[idx].quantity : null;
         const jsonQty = item.qty || item.quantity || item._initialQty;
         const finalQty = existingQty !== null ? existingQty : (Number(jsonQty) || 1);
-
-        // BUG 6 FIX: use != null instead of truthy check so numeric 0 / false are not dropped.
-        const toStr = (val: any, fallback = '') => val != null ? String(val) : fallback;
-
+        
         return {
           id: `label-${idx}`,
-          customerName: toStr(item[mapping.customerName]),
-          dishLetter: toStr(item[mapping.dishLetter]),
-          dishType: toStr(item[mapping.dishType]),
-          dishName: toStr(item[mapping.dishName]),
-          allergens: toStr(item[mapping.allergens]),
-          brand: 'BELLABONA',
+          customerName: item[mapping.customerName] ? String(item[mapping.customerName]) : '',
+          dishLetter: item[mapping.dishLetter] ? String(item[mapping.dishLetter]) : '',
+          dishType: item[mapping.dishType] ? String(item[mapping.dishType]) : '',
+          dishName: item[mapping.dishName] ? String(item[mapping.dishName]) : '',
+          allergens: item[mapping.allergens] ? String(item[mapping.allergens]) : '',
+          brand: item[mapping.brand] ? String(item[mapping.brand]) : 'BELLABONA',
           quantity: finalQty
         };
       });
@@ -174,19 +159,13 @@ const App: React.FC = () => {
   const getRawValue = (obj: any, key: string) => {
     if (!obj || !key) return '';
     const val = obj[key];
-    if (typeof val === 'object') return JSON.stringify(val);
+    if (typeof val === 'object') return JSON.stringify(val); 
     return String(val || '');
   };
 
   const totalLabels = mappedData.reduce((acc, item) => acc + (item.quantity || 1), 0);
   const totalPages = Math.ceil(totalLabels / 21);
 
-  // ─── Manual mode ───────────────────────────────────────────────────────────
-  if (mode === 'manual') {
-    return <ManualLabelBuilder onBack={() => setMode('json')} />;
-  }
-
-  // ─── JSON mode ─────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       {/* Header */}
@@ -198,220 +177,198 @@ const App: React.FC = () => {
             </div>
             <h1 className="text-xl font-bold text-gray-900 tracking-tight">LabelGen Pro</h1>
           </div>
-
+          
           <div className="flex items-center space-x-4">
-            {step > 1 && (
-              <button
-                onClick={handleReset}
-                className="flex items-center space-x-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                <RefreshCcw className="w-4 h-4" />
-                <span>Start Over</span>
-              </button>
-            )}
-            {/* Manual Builder Entry */}
-            <button
-              onClick={() => setMode('manual')}
-              className="flex items-center space-x-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors"
-            >
-              <PenLine className="w-4 h-4" />
-              <span>Build Manually</span>
-            </button>
+             {step > 1 && (
+               <button onClick={handleReset} className="flex items-center space-x-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                 <RefreshCcw className="w-4 h-4" />
+                 <span>Start Over</span>
+               </button>
+             )}
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-
+        
         {/* Step 1: Input */}
         {step === 1 && (
           <div className="flex flex-col items-center justify-center min-h-[60vh]">
             <div className="text-center mb-10 max-w-2xl">
               <h2 className="text-4xl font-extrabold text-gray-900 mb-4">Generate Professional Labels</h2>
               <p className="text-lg text-gray-600">
-                Paste your JSON data, or{' '}
-                <button
-                  onClick={() => setMode('manual')}
-                  className="text-brand-green font-semibold underline-offset-2 hover:underline"
-                >
-                  build labels manually
-                </button>
-                .
+                Paste your JSON data.
               </p>
             </div>
             <FileUpload onDataLoaded={handleDataLoaded} />
-            <div className="mt-16 text-xs text-gray-300">v2.3 (Manual Builder)</div>
+             <div className="mt-16 text-xs text-gray-300">v2.2 (Custom Layout)</div>
           </div>
         )}
 
         {/* Step 2: Mapping */}
         {step === 2 && (
           <div className="max-w-6xl mx-auto">
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900">Map Data Fields</h2>
-              <p className="text-gray-600">Match your JSON fields to the label layout.</p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
-              {/* Visual Reference & Controls */}
-              <div className="lg:col-span-5 space-y-6">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sticky top-24">
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 text-center">Label Preview</h3>
-                  <div className="flex justify-center mb-6">
-                    <div className="scale-90">
-                      <LabelPreview
-                        data={{
-                          id: 'demo',
-                          customerName: mapping.customerName ? getRawValue(rawData[0], mapping.customerName) || 'Johndoe' : 'Johndoe',
-                          dishLetter: mapping.dishLetter ? getRawValue(rawData[0], mapping.dishLetter) || 'A' : 'A',
-                          dishType: mapping.dishType ? getRawValue(rawData[0], mapping.dishType) || 'Starter' : 'Starter',
-                          dishName: mapping.dishName ? getRawValue(rawData[0], mapping.dishName) || 'Tomato Soup' : 'Tomato Soup',
-                          allergens: mapping.allergens ? getRawValue(rawData[0], mapping.allergens) || 'Gluten' : 'Gluten',
-                          brand: 'BELLABONA',
-                          quantity: 1
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-bold text-brand-green uppercase">1. Customer Name</label>
-                        <select value={mapping.customerName} onChange={(e) => handleMappingChange('customerName', e.target.value)} className="w-full text-xs rounded border-gray-300 mt-1">
-                          <option value="">(None)</option>
-                          {keys.map(k => <option key={k} value={k}>{k}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold text-brand-green uppercase">2. Dish Letter</label>
-                        <select value={mapping.dishLetter} onChange={(e) => handleMappingChange('dishLetter', e.target.value)} className="w-full text-xs rounded border-gray-300 mt-1">
-                          <option value="">(None)</option>
-                          {keys.map(k => <option key={k} value={k}>{k}</option>)}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-bold text-gray-500 uppercase">3. Dish Type</label>
-                        <select value={mapping.dishType} onChange={(e) => handleMappingChange('dishType', e.target.value)} className="w-full text-xs rounded border-gray-300 mt-1">
-                          <option value="">(None)</option>
-                          {keys.map(k => <option key={k} value={k}>{k}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold text-gray-900 uppercase">4. Dish Name</label>
-                        <select value={mapping.dishName} onChange={(e) => handleMappingChange('dishName', e.target.value)} className="w-full text-xs rounded border-gray-300 mt-1">
-                          <option value="">(None)</option>
-                          {keys.map(k => <option key={k} value={k}>{k}</option>)}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-bold text-brand-pink uppercase">5. Allergens</label>
-                        <select value={mapping.allergens} onChange={(e) => handleMappingChange('allergens', e.target.value)} className="w-full text-xs rounded border-gray-300 mt-1">
-                          <option value="">(None)</option>
-                          {keys.map(k => <option key={k} value={k}>{k}</option>)}
-                        </select>
-                      </div>
-
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Data Table */}
-              <div className="lg:col-span-7">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full max-h-[600px]">
-                  <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-                    <h3 className="font-semibold text-gray-900">Label Data ({totalLabels})</h3>
-                  </div>
-                  <div className="flex-grow overflow-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50 sticky top-0 z-10">
-                        <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-12">#</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Label Content</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-20">Qty</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {mappedData.map((row, i) => (
-                          <tr key={i} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 text-xs text-gray-400">{i + 1}</td>
-                            <td className="px-4 py-3 text-sm text-gray-900">
-                              <div className="flex justify-between">
-                                <span className="font-bold text-brand-green">{row.customerName || "-"}</span>
-                                <span className="font-bold text-brand-green">{row.dishLetter}</span>
-                              </div>
-                              <div className="text-xs text-gray-500">{row.dishType}</div>
-                              <div className="font-medium">{row.dishName}</div>
-                              <div className="text-xs text-brand-pink">{row.allergens}</div>
-                            </td>
-                            <td className="px-4 py-3">
-                              {/* BUG 1 FIX: clamp to >= 0 to prevent Array(-n) RangeError */}
-                              <input
-                                type="number"
-                                min="0"
-                                value={row.quantity}
-                                onChange={(e) => handleQuantityChange(i, Math.max(0, parseInt(e.target.value) || 0))}
-                                className="w-16 text-sm rounded border-gray-300 p-1"
-                              />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="p-4 border-t border-gray-200 bg-gray-50">
-                    <button
-                      onClick={() => setStep(3)}
-                      className="w-full flex items-center justify-center space-x-2 bg-brand-green hover:bg-green-900 text-white px-6 py-3 rounded-lg font-medium shadow-sm"
-                    >
-                      <span>Preview & Print</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
+             <div className="mb-8">
+               <h2 className="text-2xl font-bold text-gray-900">Map Data Fields</h2>
+               <p className="text-gray-600">Match your JSON fields to the label layout.</p>
+             </div>
+             
+             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+                {/* Visual Reference & Controls */}
+                <div className="lg:col-span-5 space-y-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sticky top-24">
+                     <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 text-center">Label Preview</h3>
+                     <div className="flex justify-center mb-6">
+                       <div className="scale-90">
+                        <LabelPreview 
+                            data={{ 
+                              id: 'demo', 
+                              customerName: mapping.customerName ? getRawValue(rawData[0], mapping.customerName) || 'Johndoe' : 'Johndoe', 
+                              dishLetter: mapping.dishLetter ? getRawValue(rawData[0], mapping.dishLetter) || 'A' : 'A', 
+                              dishType: mapping.dishType ? getRawValue(rawData[0], mapping.dishType) || 'Starter' : 'Starter', 
+                              dishName: mapping.dishName ? getRawValue(rawData[0], mapping.dishName) || 'Tomato Soup' : 'Tomato Soup', 
+                              allergens: mapping.allergens ? getRawValue(rawData[0], mapping.allergens) || 'Gluten' : 'Gluten', 
+                              brand: mapping.brand ? getRawValue(rawData[0], mapping.brand) || 'BELLABONA' : 'BELLABONA',
+                              quantity: 1
+                            }} 
+                          />
+                       </div>
+                     </div>
+                     
+                     <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs font-bold text-brand-green uppercase">1. Customer Name</label>
+                            <select value={mapping.customerName} onChange={(e) => handleMappingChange('customerName', e.target.value)} className="w-full text-xs rounded border-gray-300 mt-1">
+                              <option value="">(None)</option>
+                              {keys.map(k => <option key={k} value={k}>{k}</option>)}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold text-brand-green uppercase">2. Dish Letter</label>
+                            <select value={mapping.dishLetter} onChange={(e) => handleMappingChange('dishLetter', e.target.value)} className="w-full text-xs rounded border-gray-300 mt-1">
+                              <option value="">(None)</option>
+                              {keys.map(k => <option key={k} value={k}>{k}</option>)}
+                            </select>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase">3. Dish Type</label>
+                            <select value={mapping.dishType} onChange={(e) => handleMappingChange('dishType', e.target.value)} className="w-full text-xs rounded border-gray-300 mt-1">
+                              <option value="">(None)</option>
+                              {keys.map(k => <option key={k} value={k}>{k}</option>)}
+                            </select>
+                          </div>
+                           <div>
+                            <label className="text-xs font-bold text-gray-900 uppercase">4. Dish Name</label>
+                            <select value={mapping.dishName} onChange={(e) => handleMappingChange('dishName', e.target.value)} className="w-full text-xs rounded border-gray-300 mt-1">
+                              <option value="">(None)</option>
+                              {keys.map(k => <option key={k} value={k}>{k}</option>)}
+                            </select>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs font-bold text-brand-pink uppercase">5. Allergens</label>
+                            <select value={mapping.allergens} onChange={(e) => handleMappingChange('allergens', e.target.value)} className="w-full text-xs rounded border-gray-300 mt-1">
+                              <option value="">(None)</option>
+                              {keys.map(k => <option key={k} value={k}>{k}</option>)}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold text-gray-400 uppercase">6. Brand</label>
+                            <select value={mapping.brand} onChange={(e) => handleMappingChange('brand', e.target.value)} className="w-full text-xs rounded border-gray-300 mt-1">
+                              <option value="">(Default: BELLABONA)</option>
+                              {keys.map(k => <option key={k} value={k}>{k}</option>)}
+                            </select>
+                          </div>
+                        </div>
+                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
+
+                {/* Data Table */}
+                <div className="lg:col-span-7">
+                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full max-h-[600px]">
+                      <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                        <h3 className="font-semibold text-gray-900">Label Data ({totalLabels})</h3>
+                      </div>
+                      <div className="flex-grow overflow-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50 sticky top-0 z-10">
+                             <tr>
+                               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-12">#</th>
+                               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Label Content</th>
+                               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-20">Qty</th>
+                             </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {mappedData.map((row, i) => (
+                              <tr key={i} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 text-xs text-gray-400">{i + 1}</td>
+                                <td className="px-4 py-3 text-sm text-gray-900">
+                                   <div className="flex justify-between">
+                                      <span className="font-bold text-brand-green">{row.customerName || "-"}</span>
+                                      <span className="font-bold text-brand-green">{row.dishLetter}</span>
+                                   </div>
+                                   <div className="text-xs text-gray-500">{row.dishType}</div>
+                                   <div className="font-medium">{row.dishName}</div>
+                                   <div className="text-xs text-brand-pink">{row.allergens}</div>
+                                </td>
+                                <td className="px-4 py-3">
+                                   <input type="number" min="0" value={row.quantity} onChange={(e) => handleQuantityChange(i, parseInt(e.target.value) || 0)} className="w-16 text-sm rounded border-gray-300 p-1" />
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="p-4 border-t border-gray-200 bg-gray-50">
+                        <button onClick={() => setStep(3)} className="w-full flex items-center justify-center space-x-2 bg-brand-green hover:bg-green-900 text-white px-6 py-3 rounded-lg font-medium shadow-sm">
+                           <span>Preview & Print</span>
+                           <ArrowRight className="w-4 h-4" />
+                         </button>
+                      </div>
+                   </div>
+                </div>
+             </div>
           </div>
         )}
 
         {/* Step 3: Preview */}
         {step === 3 && (
           <div>
-            <div className="flex justify-between mb-8">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Print Preview</h2>
-                <p className="text-gray-600">{totalLabels} labels • {totalPages} pages (A4).</p>
-              </div>
-              <div className="flex space-x-3">
-                <button onClick={() => setStep(2)} className="flex items-center space-x-2 bg-white border border-gray-300 px-4 py-2 rounded-lg font-medium hover:bg-gray-50">
-                  <Settings2 className="w-4 h-4" /> <span>Edit</span>
-                </button>
-                <button onClick={() => downloadPDF(mappedData)} className="flex items-center space-x-2 bg-white border border-gray-300 px-4 py-2 rounded-lg font-medium hover:bg-gray-50">
-                  <Download className="w-4 h-4" /> <span>Download</span>
-                </button>
-                <button onClick={() => printPDF(mappedData)} className="flex items-center space-x-2 bg-brand-green text-white px-6 py-2 rounded-lg font-medium shadow-lg hover:bg-green-900">
-                  <Printer className="w-4 h-4" /> <span>Print</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 overflow-x-auto min-h-[600px] bg-[url('https://www.transparenttextures.com/patterns/graphy.png')]">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 max-w-5xl mx-auto">
-                {mappedData.flatMap((item, idx) =>
-                  Array(item.quantity).fill(null).map((_, copyIdx) => (
-                    <div key={`${idx}-${copyIdx}`} className="relative group">
-                      <LabelPreview data={item} />
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
+             <div className="flex justify-between mb-8">
+               <div>
+                 <h2 className="text-2xl font-bold text-gray-900">Print Preview</h2>
+                 <p className="text-gray-600">{totalLabels} labels • {totalPages} pages (A4).</p>
+               </div>
+               <div className="flex space-x-3">
+                  <button onClick={() => setStep(2)} className="flex items-center space-x-2 bg-white border border-gray-300 px-4 py-2 rounded-lg font-medium hover:bg-gray-50">
+                    <Settings2 className="w-4 h-4" /> <span>Edit</span>
+                  </button>
+                  <button onClick={() => downloadPDF(mappedData)} className="flex items-center space-x-2 bg-white border border-gray-300 px-4 py-2 rounded-lg font-medium hover:bg-gray-50">
+                    <Download className="w-4 h-4" /> <span>Download</span>
+                  </button>
+                  <button onClick={() => printPDF(mappedData)} className="flex items-center space-x-2 bg-brand-green text-white px-6 py-2 rounded-lg font-medium shadow-lg hover:bg-green-900">
+                    <Printer className="w-4 h-4" /> <span>Print</span>
+                  </button>
+               </div>
+             </div>
+             
+             <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 overflow-x-auto min-h-[600px] bg-[url('https://www.transparenttextures.com/patterns/graphy.png')]">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 max-w-5xl mx-auto">
+                  {mappedData.flatMap((item, idx) => 
+                     Array(item.quantity).fill(null).map((_, copyIdx) => (
+                        <div key={`${idx}-${copyIdx}`} className="relative group">
+                          <LabelPreview data={item} />
+                        </div>
+                     ))
+                  )}
+                </div>
+             </div>
           </div>
         )}
       </main>
