@@ -38,7 +38,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
   .grid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:38mm;gap:1.5mm;width:100%;}
   .cell{border:.4pt solid #d0d0d0;border-radius:4pt;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3mm 5mm;page-break-inside:avoid;break-inside:avoid;}
   .dish{color:#e91e8c;font-weight:700;font-size:16pt;text-align:center;line-height:1.25;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .line{width:80%;height:1pt;background:#1b5e20;margin:2.5mm 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .line{width:80%;height:1pt;background:#e91e8c;margin:2.5mm 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .logo{width:65%;max-width:42mm;height:auto;object-fit:contain;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 </style></head><body>
 <div class="grid">${rows}</div>
@@ -73,7 +73,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
           {expandedLabels.map((item, idx) => (
             <div key={idx} style={{ border:'0.5px solid #d0d0d0', borderRadius:'5px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'12px 16px', minHeight:'100px', backgroundColor:'#fff' }}>
               <div style={{ color:'#e91e8c', fontWeight:700, fontSize:'20px', textAlign:'center', lineHeight:1.25, width:'100%' }}>{item.dishName}</div>
-              <div style={{ width:'80%', height:'1.5px', backgroundColor:'#1b5e20', margin:'8px 0' }} />
+              <div style={{ width:'80%', height:'1.5px', backgroundColor:'#e91e8c', margin:'8px 0' }} />
               <img src={BB_LOGO} alt="BELLABONA" style={{ width:'65%', maxWidth:'140px', height:'auto', objectFit:'contain' }} />
             </div>
           ))}
