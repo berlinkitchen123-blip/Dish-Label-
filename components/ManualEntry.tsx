@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, ArrowRight, UserCheck, Utensils } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Printer, Utensils } from 'lucide-react';
 
 interface ManualEntryProps {
   onDataLoaded: (data: any[]) => void;
@@ -39,6 +39,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
   });
 
   const [error, setError] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,19 +69,111 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
       setError('Please add at least one label item.');
       return;
     }
-    // Format items so that App.tsx maps them cleanly
-    const formatted = items.map(item => ({
-      "Customer Name": item.customerName,
-      "Dish Letter": item.dishLetter,
-      "Dish Type": item.dishType,
-      "Dish Name": item.dishName,
-      "Allergens": item.allergens,
-      "Brand": item.brand,
-      "Quantity": item.quantity,
-      _initialQty: item.quantity
-    }));
-    onDataLoaded(formatted);
+    setError(null);
+    setShowPreview(true);
   };
+
+  const expandedLabels = items.flatMap(item =>
+    Array(item.quantity).fill(item)
+  );
+
+  const totalLabelCount = items.reduce((acc, i) => acc + i.quantity, 0);
+  const totalPages = Math.ceil(totalLabelCount / 21);
+
+  if (showPreview) {
+    return (
+      <div className="w-full max-w-5xl mx-auto">
+        <style dangerouslySetInnerHTML={{ __html: `
+          @media print {
+            body > * { display: none !important; }
+            #bb-label-print-root { display: block !important; position: fixed; top: 0; left: 0; width: 100%; z-index: 99999; }
+            #bb-label-print-root .no-print { display: none !important; }
+          }
+          @page {
+            size: A4 portrait;
+            margin: 10mm;
+          }
+          #bb-label-print-root .label-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4mm;
+            width: 100%;
+          }
+          #bb-label-print-root .label-cell {
+            border: 0.5px solid #e5e7eb;
+            border-radius: 3px;
+            padding: 8px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 76px;
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          #bb-label-print-root .label-dish {
+            color: #e91e8c;
+            font-weight: 700;
+            font-size: 13px;
+            text-align: center;
+            line-height: 1.25;
+            text-transform: uppercase;
+            word-break: break-word;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          #bb-label-print-root .label-divider {
+            width: 80%;
+            height: 1px;
+            background-color: #e91e8c;
+            margin: 5px 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          #bb-label-print-root .label-brand {
+            font-weight: 700;
+            font-size: 10px;
+            text-align: center;
+            text-transform: uppercase;
+            color: #111827;
+            letter-spacing: 0.08em;
+          }
+        `}} />
+
+        <div id="bb-label-print-root">
+          <div className="no-print mb-6 flex items-center justify-between bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+            <button
+              onClick={() => setShowPreview(false)}
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 text-sm font-medium"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Edit</span>
+            </button>
+            <div className="text-sm text-gray-500">
+              {totalLabelCount} label{totalLabelCount !== 1 ? 's' : ''} &mdash; {totalPages} page{totalPages !== 1 ? 's' : ''} (A4, 3&times;7)
+            </div>
+            <button
+              onClick={() => window.print()}
+              className="flex items-center space-x-2 bg-brand-green hover:bg-green-900 text-white px-6 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-all"
+            >
+              <Printer className="w-4 h-4" />
+              <span>Print</span>
+            </button>
+          </div>
+
+          <div className="label-grid">
+            {expandedLabels.map((item, idx) => (
+              <div key={idx} className="label-cell">
+                <div className="label-dish">{item.dishName}</div>
+                <div className="label-divider" />
+                <div className="label-brand">{item.brand || 'BELLABONA'}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-4xl mx-auto mb-8">
@@ -186,7 +279,6 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
           </div>
         )}
 
-        {/* Added Items Table */}
         <div className="border border-gray-200 rounded-xl overflow-hidden mb-6">
           <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
             <h4 className="font-semibold text-gray-900 text-sm">Added Items ({items.length})</h4>
@@ -219,15 +311,14 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
           )}
         </div>
 
-        {/* Action Button */}
         <div className="flex justify-end">
           <button
             onClick={handleGenerate}
             disabled={items.length === 0}
             className="flex items-center space-x-2 bg-brand-green hover:bg-green-900 disabled:opacity-50 text-white px-8 py-3 rounded-xl font-medium shadow-sm transition-all"
           >
+            <Printer className="w-4 h-4" />
             <span>Generate Labels ({items.reduce((acc, i) => acc + i.quantity, 0)})</span>
-            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </div>
