@@ -50,49 +50,11 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
   *{box-sizing:border-box;margin:0;padding:0;}
   @page{size:A4 portrait;margin:10mm;}
   body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    grid-auto-rows:38mm;
-    gap:1.5mm;
-    width:100%;
-  }
-  .cell{
-    border:.4pt solid #c8c8c8;
-    border-radius:3pt;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    padding:3mm 4mm;
-    page-break-inside:avoid;
-    break-inside:avoid;
-  }
-  .dish{
-    color:#e91e8c;
-    font-weight:700;
-    font-size:17pt;
-    text-align:center;
-    line-height:1.2;
-    word-break:break-word;
-    -webkit-print-color-adjust:exact;
-    print-color-adjust:exact;
-  }
-  .line{
-    width:72%;
-    height:.75pt;
-    background:#e91e8c;
-    margin:2mm 0;
-    -webkit-print-color-adjust:exact;
-    print-color-adjust:exact;
-  }
-  .brand{
-    font-weight:700;
-    font-size:8.5pt;
-    text-align:center;
-    color:#1a1a1a;
-    letter-spacing:0.1em;
-  }
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:38mm;gap:1.5mm;width:100%;}
+  .cell{border:.4pt solid #c8c8c8;border-radius:3pt;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3mm 5mm;page-break-inside:avoid;break-inside:avoid;}
+  .dish{color:#e91e8c;font-weight:700;font-size:15pt;text-align:center;line-height:1.2;word-break:break-word;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .line{width:72%;height:.75pt;background:#e91e8c;margin:2mm 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .brand{font-weight:700;font-size:12pt;text-align:center;color:#1a1a1a;letter-spacing:0.04em;}
 </style>
 </head>
 <body>
@@ -126,25 +88,14 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
             <Printer className="w-4 h-4" /><span>Print</span>
           </button>
         </div>
-
         <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'6px', width:'100%' }}>
           {expandedLabels.map((item, idx) => (
-            <div key={idx} style={{
-              border:'0.5px solid #c8c8c8', borderRadius:'4px', display:'flex',
-              flexDirection:'column', alignItems:'center', justifyContent:'center',
-              padding:'12px 14px', minHeight:'95px', backgroundColor:'#fff'
-            }}>
-              <div style={{
-                color:'#e91e8c', fontWeight:700, fontSize:'20px',
-                textAlign:'center', lineHeight:1.2, textTransform:'uppercase', wordBreak:'break-word', width:'100%'
-              }}>
+            <div key={idx} style={{ border:'0.5px solid #c8c8c8', borderRadius:'4px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'12px 16px', minHeight:'95px', backgroundColor:'#fff' }}>
+              <div style={{ color:'#e91e8c', fontWeight:700, fontSize:'18px', textAlign:'center', lineHeight:1.2, textTransform:'uppercase', wordBreak:'break-word', width:'100%' }}>
                 {item.dishName}
               </div>
               <div style={{ width:'72%', height:'1px', backgroundColor:'#e91e8c', margin:'7px 0' }} />
-              <div style={{
-                fontWeight:700, fontSize:'10px', textAlign:'center',
-                textTransform:'uppercase', color:'#1a1a1a', letterSpacing:'0.1em'
-              }}>
+              <div style={{ fontWeight:700, fontSize:'14px', textAlign:'center', textTransform:'uppercase', color:'#1a1a1a', letterSpacing:'0.04em' }}>
                 {item.brand || 'BELLABONA'}
               </div>
             </div>
@@ -159,10 +110,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-6">
         <div className="flex items-center space-x-2 mb-6">
           <div className="bg-brand-green/10 p-2 rounded-lg"><Utensils className="w-5 h-5 text-brand-green" /></div>
-          <div>
-            <h3 className="font-semibold text-gray-900">Manual Label Entry</h3>
-            <p className="text-xs text-gray-500">Add individual items or orders manually</p>
-          </div>
+          <div><h3 className="font-semibold text-gray-900">Manual Label Entry</h3><p className="text-xs text-gray-500">Add individual items or orders manually</p></div>
         </div>
         <form onSubmit={handleAddItem} className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
