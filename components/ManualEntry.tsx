@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Trash2, ArrowLeft, Printer, Utensils } from 'lucide-react';
 
 // Bellabona logo as inline SVG — dark green bold, matches brand, zero dependencies
-const BB_LOGO = 'data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20520%2085%22%3E%3Ctext%20x%3D%222%22%20y%3D%2272%22%20font-family%3D%22Arial%20Black%2CArial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2278%22%20fill%3D%22%231b5e20%22%20letter-spacing%3D%22-2%22%3EBELLABONA%3C%2Ftext%3E%3C%2Fsvg%3E';
+const BB_LOGO = 'data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20520%20128%22%3E%3Ctext%20x%3D%222%22%20y%3D%22108%22%20font-family%3D%22Arial%20Black%2CArial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2278%22%20fill%3D%22%231b5e20%22%20letter-spacing%3D%22-2%22%3EBELLABONA%3C%2Ftext%3E%3C%2Fsvg%3E';
 
 interface ManualEntryProps { onDataLoaded: (data: any[]) => void; }
 interface ManualItem { dishName: string; quantity: number; }
