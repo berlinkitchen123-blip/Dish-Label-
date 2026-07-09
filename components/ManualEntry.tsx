@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, ArrowLeft, Printer, Utensils } from 'lucide-react';
 
-// Logo hosted on GitHub Pages — fetched at print time so about:blank windows get a data URL
-const BB_LOGO_URL = 'https://berlinkitchen123-blip.github.io/Dish-Label-/bb_logo.png';
+// Bellabona logo as inline SVG — dark green bold, matches brand, zero dependencies
+const BB_LOGO = 'data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20520%2085%22%3E%3Ctext%20x%3D%222%22%20y%3D%2272%22%20font-family%3D%22Arial%20Black%2CArial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2278%22%20fill%3D%22%231b5e20%22%20letter-spacing%3D%22-2%22%3EBELLABONA%3C%2Ftext%3E%3C%2Fsvg%3E';
 
 interface ManualEntryProps { onDataLoaded: (data: any[]) => void; }
 interface ManualItem { dishName: string; quantity: number; }
@@ -23,24 +23,11 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
 
   const handleRemove = (index: number) => setItems(items.filter((_, i) => i !== index));
 
-  const handlePrint = async (labels: ManualItem[]) => {
-    // Fetch logo and convert to base64 data URL so it works in about:blank
-    let logoSrc = BB_LOGO_URL;
-    try {
-      const resp = await fetch(BB_LOGO_URL);
-      const blob = await resp.blob();
-      logoSrc = await new Promise<string>(resolve => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(blob);
-      });
-    } catch (e) { /* fall back to URL */ }
-
+  const handlePrint = (labels: ManualItem[]) => {
     const expanded = labels.flatMap(item => Array(item.quantity).fill(item));
     const rows = expanded.map(item =>
-      '<div class="cell"><div class="dish">' + item.dishName + '</div><div class="line"></div><img class="logo" src="' + logoSrc + '" alt="BELLABONA"/></div>'
+      '<div class="cell"><div class="dish">' + item.dishName + '</div><div class="line"></div><img class="logo" src="' + BB_LOGO + '" alt="BELLABONA"/></div>'
     ).join('');
-
     const win = window.open('', '_blank', 'width=820,height=1060');
     if (!win) return;
     win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Labels</title>
@@ -52,7 +39,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
   .cell{border:.4pt solid #d0d0d0;border-radius:4pt;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3mm 5mm;page-break-inside:avoid;break-inside:avoid;}
   .dish{color:#e91e8c;font-weight:700;font-size:16pt;text-align:center;line-height:1.25;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .line{width:80%;height:1pt;background:#1b5e20;margin:2.5mm 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .logo{width:60%;max-width:38mm;height:auto;object-fit:contain;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .logo{width:65%;max-width:42mm;height:auto;object-fit:contain;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 </style></head><body>
 <div class="grid">${rows}</div>
 <script>window.onload=function(){window.print();};<\/script>
@@ -87,7 +74,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
             <div key={idx} style={{ border:'0.5px solid #d0d0d0', borderRadius:'5px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'12px 16px', minHeight:'100px', backgroundColor:'#fff' }}>
               <div style={{ color:'#e91e8c', fontWeight:700, fontSize:'20px', textAlign:'center', lineHeight:1.25, width:'100%' }}>{item.dishName}</div>
               <div style={{ width:'80%', height:'1.5px', backgroundColor:'#1b5e20', margin:'8px 0' }} />
-              <img src={BB_LOGO_URL} alt="BELLABONA" style={{ width:'60%', maxWidth:'130px', height:'auto', objectFit:'contain' }} />
+              <img src={BB_LOGO} alt="BELLABONA" style={{ width:'65%', maxWidth:'140px', height:'auto', objectFit:'contain' }} />
             </div>
           ))}
         </div>
