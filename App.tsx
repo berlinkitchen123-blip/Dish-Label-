@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { FileUpload } from './components/FileUpload';
+import { ManualEntry } from './components/ManualEntry';
 import { LabelPreview } from './components/LabelPreview';
 import { downloadPDF, printPDF } from './services/pdfGenerator';
 import { LabelData, RawJsonItem, FieldMapping, MappingKey } from './types';
-import { Printer, RefreshCcw, Check, ArrowRight, Settings2, Download, Info } from 'lucide-react';
+import { Printer, RefreshCcw, Check, ArrowRight, Settings2, Download, Info, FileCode, Edit3 } from 'lucide-react';
 
 const App: React.FC = () => {
   const [rawData, setRawData] = useState<RawJsonItem[]>([]);
   const [mappedData, setMappedData] = useState<LabelData[]>([]);
+  const [inputTab, setInputTab] = useState<'json' | 'manual'>('json');
   
   // Updated Mapping State for 6 fields
   const [mapping, setMapping] = useState<FieldMapping>({ 
@@ -195,14 +197,46 @@ const App: React.FC = () => {
         {/* Step 1: Input */}
         {step === 1 && (
           <div className="flex flex-col items-center justify-center min-h-[60vh]">
-            <div className="text-center mb-10 max-w-2xl">
-              <h2 className="text-4xl font-extrabold text-gray-900 mb-4">Generate Professional Labels</h2>
-              <p className="text-lg text-gray-600">
-                Paste your JSON data.
+            <div className="text-center mb-8 max-w-2xl">
+              <h2 className="text-4xl font-extrabold text-gray-900 mb-3">Generate Professional Labels</h2>
+              <p className="text-lg text-gray-600 mb-6">
+                Choose how you want to input your label data.
               </p>
+
+              {/* Input Mode Tabs */}
+              <div className="inline-flex bg-gray-200 p-1 rounded-xl shadow-inner">
+                <button
+                  onClick={() => setInputTab('json')}
+                  className={`flex items-center space-x-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                    inputTab === 'json'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <FileCode className="w-4 h-4 text-brand-green" />
+                  <span>Paste JSON</span>
+                </button>
+                <button
+                  onClick={() => setInputTab('manual')}
+                  className={`flex items-center space-x-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                    inputTab === 'manual'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Edit3 className="w-4 h-4 text-brand-green" />
+                  <span>Manual Entry</span>
+                </button>
+              </div>
             </div>
-            <FileUpload onDataLoaded={handleDataLoaded} />
-             <div className="mt-16 text-xs text-gray-300">v2.2 (Custom Layout)</div>
+
+            {inputTab === 'json' ? (
+              <FileUpload onDataLoaded={handleDataLoaded} />
+            ) : (
+              <ManualEntry onDataLoaded={handleDataLoaded} />
+            )}
+
+             <div className="mt-12 text-xs text-gray-300">v2.3 (Manual & JSON Entry)</div>
           </div>
         )}
 
