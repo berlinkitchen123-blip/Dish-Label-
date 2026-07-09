@@ -53,8 +53,8 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
   .grid{
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    grid-auto-rows:40mm;
-    gap:2mm;
+    grid-auto-rows:38mm;
+    gap:1.5mm;
     width:100%;
   }
   .cell{
@@ -64,31 +64,31 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
     flex-direction:column;
     align-items:center;
     justify-content:center;
-    padding:4mm 5mm;
+    padding:3mm 4mm;
     page-break-inside:avoid;
     break-inside:avoid;
   }
   .dish{
     color:#e91e8c;
     font-weight:700;
-    font-size:13pt;
+    font-size:15pt;
     text-align:center;
-    line-height:1.25;
+    line-height:1.2;
     word-break:break-word;
     -webkit-print-color-adjust:exact;
     print-color-adjust:exact;
   }
   .line{
-    width:75%;
+    width:72%;
     height:.75pt;
     background:#e91e8c;
-    margin:3mm 0;
+    margin:2.5mm 0;
     -webkit-print-color-adjust:exact;
     print-color-adjust:exact;
   }
   .brand{
     font-weight:700;
-    font-size:10pt;
+    font-size:11pt;
     text-align:center;
     color:#1a1a1a;
     letter-spacing:0.05em;
@@ -112,23 +112,9 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
   const totalLabelCount = items.reduce((acc, i) => acc + i.quantity, 0);
   const totalPages = Math.ceil(totalLabelCount / 21);
 
-  /* ── LABEL CARD – shared style for preview ── */
-  const cardStyle: React.CSSProperties = {
-    border: '0.5px solid #c8c8c8',
-    borderRadius: '4px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '16px 18px',
-    minHeight: '110px',
-    backgroundColor: '#fff',
-  };
-
   if (showPreview) {
     return (
       <div className="w-full max-w-5xl mx-auto">
-        {/* Toolbar */}
         <div className="mb-5 flex items-center justify-between bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
           <button onClick={() => setShowPreview(false)} className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 text-sm font-medium">
             <ArrowLeft className="w-4 h-4" /><span>Back to Edit</span>
@@ -141,18 +127,41 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
           </button>
         </div>
 
-        {/* Preview grid — mirrors print exactly */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', width: '100%' }}>
+        {/* Preview grid — proportions mirror print layout */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'6px', width:'100%' }}>
           {expandedLabels.map((item, idx) => (
-            <div key={idx} style={cardStyle}>
-              {/* Dish name — pink bold */}
-              <div style={{ color: '#e91e8c', fontWeight: 700, fontSize: '16px', textAlign: 'center', lineHeight: 1.25, textTransform: 'uppercase', wordBreak: 'break-word', width: '100%' }}>
+            <div key={idx} style={{
+              border: '0.5px solid #c8c8c8',
+              borderRadius: '4px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '12px 14px',
+              minHeight: '95px',
+              backgroundColor: '#fff'
+            }}>
+              <div style={{
+                color: '#e91e8c',
+                fontWeight: 700,
+                fontSize: '17px',
+                textAlign: 'center',
+                lineHeight: 1.2,
+                textTransform: 'uppercase',
+                wordBreak: 'break-word',
+                width: '100%'
+              }}>
                 {item.dishName}
               </div>
-              {/* Divider */}
-              <div style={{ width: '75%', height: '1px', backgroundColor: '#e91e8c', margin: '10px 0' }} />
-              {/* Brand — dark bold */}
-              <div style={{ fontWeight: 700, fontSize: '13px', textAlign: 'center', textTransform: 'uppercase', color: '#1a1a1a', letterSpacing: '0.05em' }}>
+              <div style={{ width:'72%', height:'1px', backgroundColor:'#e91e8c', margin:'8px 0' }} />
+              <div style={{
+                fontWeight: 700,
+                fontSize: '13px',
+                textAlign: 'center',
+                textTransform: 'uppercase',
+                color: '#1a1a1a',
+                letterSpacing: '0.05em'
+              }}>
                 {item.brand || 'BELLABONA'}
               </div>
             </div>
