@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, ArrowLeft, Printer, Utensils } from 'lucide-react';
 
+const BB_LOGO = 'https://berlinkitchen123-blip.github.io/Dish-Label-/bb_logo.png';
+
 interface ManualEntryProps {
   onDataLoaded: (data: any[]) => void;
 }
 
 interface ManualItem {
   dishName: string;
-  brand: string;
   quantity: number;
 }
 
 export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
   const [items, setItems] = useState<ManualItem[]>([]);
-  const [current, setCurrent] = useState<ManualItem>({ dishName: '', brand: 'BELLABONA', quantity: 1 });
+  const [current, setCurrent] = useState<ManualItem>({ dishName: '', quantity: 1 });
   const [error, setError] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -22,7 +23,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
     if (!current.dishName.trim()) { setError('Dish Name is required.'); return; }
     setError(null);
     setItems([...items, current]);
-    setCurrent({ dishName: '', brand: current.brand || 'BELLABONA', quantity: 1 });
+    setCurrent({ dishName: '', quantity: 1 });
   };
 
   const handleRemove = (index: number) => setItems(items.filter((_, i) => i !== index));
@@ -33,9 +34,8 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
       <div class="cell">
         <div class="dish">${item.dishName}</div>
         <div class="line"></div>
-        <div class="brand">${item.brand || 'BELLABONA'}</div>
+        <img class="logo" src="${BB_LOGO}" alt="BELLABONA"/>
       </div>`).join('');
-
     const win = window.open('', '_blank', 'width=820,height=1060');
     if (!win) return;
     win.document.write(`<!DOCTYPE html>
@@ -45,43 +45,10 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
   @page{size:A4 portrait;margin:10mm;}
   body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
   .grid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:38mm;gap:1.5mm;width:100%;}
-  .cell{
-    border:.5pt solid #d0d0d0;
-    border-radius:4pt;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    padding:3mm 5mm;
-    page-break-inside:avoid;
-    break-inside:avoid;
-  }
-  .dish{
-    color:#e91e8c;
-    font-weight:700;
-    font-size:16pt;
-    text-align:center;
-    line-height:1.25;
-    -webkit-print-color-adjust:exact;
-    print-color-adjust:exact;
-  }
-  .line{
-    width:80%;
-    height:1pt;
-    background:#1b5e20;
-    margin:2.5mm 0;
-    -webkit-print-color-adjust:exact;
-    print-color-adjust:exact;
-  }
-  .brand{
-    font-weight:800;
-    font-size:14pt;
-    text-align:center;
-    color:#1b5e20;
-    letter-spacing:0.03em;
-    -webkit-print-color-adjust:exact;
-    print-color-adjust:exact;
-  }
+  .cell{border:.4pt solid #d0d0d0;border-radius:4pt;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3mm 5mm;page-break-inside:avoid;break-inside:avoid;}
+  .dish{color:#e91e8c;font-weight:700;font-size:16pt;text-align:center;line-height:1.25;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .line{width:80%;height:1pt;background:#1b5e20;margin:2.5mm 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .logo{width:60%;max-width:38mm;height:auto;object-fit:contain;}
 </style>
 </head><body>
   <div class="grid">${rows}</div>
@@ -114,21 +81,14 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
             <Printer className="w-4 h-4" /><span>Print</span>
           </button>
         </div>
-
         <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'6px', width:'100%' }}>
           {expandedLabels.map((item, idx) => (
-            <div key={idx} style={{
-              border:'0.5px solid #d0d0d0', borderRadius:'5px', display:'flex',
-              flexDirection:'column', alignItems:'center', justifyContent:'center',
-              padding:'14px 18px', minHeight:'100px', backgroundColor:'#fff'
-            }}>
-              <div style={{ color:'#e91e8c', fontWeight:700, fontSize:'20px', textAlign:'center', lineHeight:1.25 }}>
+            <div key={idx} style={{ border:'0.5px solid #d0d0d0', borderRadius:'5px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'12px 16px', minHeight:'100px', backgroundColor:'#fff' }}>
+              <div style={{ color:'#e91e8c', fontWeight:700, fontSize:'20px', textAlign:'center', lineHeight:1.25, width:'100%' }}>
                 {item.dishName}
               </div>
-              <div style={{ width:'80%', height:'1.5px', backgroundColor:'#1b5e20', margin:'9px 0' }} />
-              <div style={{ fontWeight:800, fontSize:'17px', textAlign:'center', color:'#1b5e20', letterSpacing:'0.03em' }}>
-                {item.brand || 'BELLABONA'}
-              </div>
+              <div style={{ width:'80%', height:'1.5px', backgroundColor:'#1b5e20', margin:'8px 0' }} />
+              <img src={BB_LOGO} alt="BELLABONA" style={{ width:'60%', maxWidth:'130px', height:'auto', objectFit:'contain' }} />
             </div>
           ))}
         </div>
@@ -137,59 +97,48 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto mb-8">
+    <div className="w-full max-w-xl mx-auto mb-8">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-6">
         <div className="flex items-center space-x-2 mb-6">
           <div className="bg-brand-green/10 p-2 rounded-lg"><Utensils className="w-5 h-5 text-brand-green" /></div>
           <div>
             <h3 className="font-semibold text-gray-900">Manual Label Entry</h3>
-            <p className="text-xs text-gray-500">Add dish name and generate labels</p>
+            <p className="text-xs text-gray-500">Enter dish name and quantity</p>
           </div>
         </div>
-
         <form onSubmit={handleAddItem} className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Dish Name *</label>
-              <input type="text" placeholder="e.g. Cookies Baked Milk Chocolate" value={current.dishName}
-                onChange={e => setCurrent({ ...current, dishName: e.target.value })}
-                className="w-full text-sm rounded border-gray-300 p-2 bg-white" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Brand</label>
-              <input type="text" placeholder="BELLABONA" value={current.brand}
-                onChange={e => setCurrent({ ...current, brand: e.target.value })}
-                className="w-full text-sm rounded border-gray-300 p-2 bg-white" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Quantity</label>
-              <input type="number" min="1" value={current.quantity}
-                onChange={e => setCurrent({ ...current, quantity: parseInt(e.target.value) || 1 })}
-                className="w-full text-sm rounded border-gray-300 p-2 bg-white" />
-            </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Dish Name *</label>
+            <input type="text" placeholder="e.g. Cookies Baked Milk Chocolate" value={current.dishName}
+              onChange={e => setCurrent({ ...current, dishName: e.target.value })}
+              className="w-full text-sm rounded border-gray-300 p-2 bg-white" />
           </div>
-          <div className="flex justify-end pt-2">
+          <div>
+            <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Quantity</label>
+            <input type="number" min="1" value={current.quantity}
+              onChange={e => setCurrent({ ...current, quantity: parseInt(e.target.value) || 1 })}
+              className="w-full text-sm rounded border-gray-300 p-2 bg-white" />
+          </div>
+          <div className="flex justify-end">
             <button type="submit" className="flex items-center space-x-1.5 bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-sm">
               <Plus className="w-4 h-4" /><span>Add to List</span>
             </button>
           </div>
         </form>
-
         {error && <div className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">{error}</div>}
-
         <div className="border border-gray-200 rounded-xl overflow-hidden mb-6">
           <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
             <h4 className="font-semibold text-gray-900 text-sm">Added Items ({items.length})</h4>
           </div>
           {items.length === 0 ? (
-            <div className="p-8 text-center text-gray-400 text-sm">No items yet. Add a dish above.</div>
+            <div className="p-8 text-center text-gray-400 text-sm">No items yet.</div>
           ) : (
             <div className="max-h-60 overflow-y-auto divide-y divide-gray-200">
               {items.map((item, idx) => (
                 <div key={idx} className="p-3 flex items-center justify-between hover:bg-gray-50 text-sm">
                   <div>
                     <div className="font-bold text-gray-900">{item.dishName}</div>
-                    <div className="text-xs text-gray-500">{item.brand} &middot; Qty: {item.quantity}</div>
+                    <div className="text-xs text-gray-500">Qty: {item.quantity}</div>
                   </div>
                   <button onClick={() => handleRemove(idx)} className="text-red-500 hover:text-red-700 p-1.5 rounded">
                     <Trash2 className="w-4 h-4" />
@@ -199,7 +148,6 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
             </div>
           )}
         </div>
-
         <div className="flex justify-end">
           <button onClick={handleGenerate} disabled={items.length === 0}
             className="flex items-center space-x-2 bg-brand-green hover:bg-green-900 disabled:opacity-50 text-white px-8 py-3 rounded-xl font-medium shadow-sm transition-all">
