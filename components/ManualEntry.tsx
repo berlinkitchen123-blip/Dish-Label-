@@ -33,11 +33,11 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
     win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Labels</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
-  @page{size:A4 portrait;margin:10mm;}
+  @page{size:A4 portrait;margin:11mm;}
   body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
   .grid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:38mm;gap:1.5mm;width:100%;}
   .cell{border:.4pt solid #d0d0d0;border-radius:4pt;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3mm 5mm;page-break-inside:avoid;break-inside:avoid;}
-  .dish{color:#e91e8c;font-weight:700;font-size:16pt;text-align:center;line-height:1.25;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .dish{color:#e91e32;font-weight:700;font-size:22pt;text-align:center;line-height:1.25;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .line{width:80%;height:1pt;background:#e91e8c;margin:2.5mm 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .logo{width:65%;max-width:42mm;height:auto;object-fit:contain;transform:scaleY(1.5);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 </style></head><body>
@@ -72,7 +72,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
         <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'6px', width:'100%' }}>
           {expandedLabels.map((item, idx) => (
             <div key={idx} style={{ border:'0.5px solid #d0d0d0', borderRadius:'5px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'12px 16px', minHeight:'100px', backgroundColor:'#fff' }}>
-              <div style={{ color:'#e91e8c', fontWeight:700, fontSize:'20px', textAlign:'center', lineHeight:1.25, width:'100%' }}>{item.dishName}</div>
+              <div style={{ color:'#e91e32', fontWeight:700, fontSize:'22px', textAlign:'center', lineHeight:1.25, width:'100%' }}>{item.dishName}</div>
               <div style={{ width:'80%', height:'1.5px', backgroundColor:'#e91e8c', margin:'8px 0' }} />
               <img src={BB_LOGO} alt="BELLABONA" style={{ width:'65%', maxWidth:'140px', height:'auto', objectFit:'contain', transform:'scaleY(1.5)', transformOrigin:'center' }} />
             </div>
