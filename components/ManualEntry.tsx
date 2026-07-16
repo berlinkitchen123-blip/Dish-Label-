@@ -33,9 +33,9 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
     win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Labels</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
-  @page{size:A4 portrait;margin:11mm;}
+  @page{size:A4 portrait;margin-top:15mm;margin-left:7mm;margin-right:8mm;margin-bottom:5mm;}
   body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:38.1mm;gap:1.4mm;width:100%;}
+  .grid{display:grid;grid-template-columns:repeat(3,63mm);grid-auto-rows:38mm;column-gap:3mm;row-gap:0mm;width:195mm;}
   .cell{border:.4pt solid #d0d0d0;border-radius:4pt;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3mm 5mm;page-break-inside:avoid;break-inside:avoid;}
   .dish{color:#e91e8c;font-weight:700;font-size:16pt;text-align:center;line-height:1.25;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .line{width:80%;height:1pt;background:#e91e8c;margin:2.5mm 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
