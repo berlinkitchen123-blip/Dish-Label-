@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, ArrowLeft, Printer, Utensils } from 'lucide-react';
 
-// Bellabona logo as inline SVG — dark green bold, matches brand, zero dependencies
 const BB_LOGO = 'data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20520%20128%22%3E%3Ctext%20x%3D%222%22%20y%3D%22108%22%20font-family%3D%22Arial%20Black%2CArial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2278%22%20fill%3D%22%231b5e20%22%20letter-spacing%3D%22-2%22%3EBELLABONA%3C%2Ftext%3E%3C%2Fsvg%3E';
 
 interface ManualEntryProps { onDataLoaded: (data: any[]) => void; }
@@ -25,9 +24,13 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
 
   const handlePrint = (labels: ManualItem[]) => {
     const expanded = labels.flatMap(item => Array(item.quantity).fill(item));
-    const rows = expanded.map(item =>
-      '<div class="cell"><div class="dish">' + item.dishName + '</div><div class="line"></div>' + (item.allergens ? '<div class="allergens">' + item.allergens + '</div>' : '') + '<img class="logo" src="' + BB_LOGO + '" alt="BELLABONA"/></div>'
-    ).join('');
+    const rows = expanded.map(item => `
+      <div class="cell">
+        <div class="dish">${item.dishName}</div>
+        <div class="line"></div>
+        ${item.allergens ? '<div class="allergens">' + item.allergens + '</div>' : ''}
+        <img class="logo" src="${BB_LOGO}" alt="BELLABONA"/>
+      </div>`).join('');
     const win = window.open('', '_blank', 'width=820,height=1060');
     if (!win) return;
     win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Labels</title>
@@ -36,10 +39,11 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
   @page{size:A4 portrait;margin-top:15.5mm;margin-left:7mm;margin-right:8mm;margin-bottom:5mm;}
   body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
   .grid{display:grid;grid-template-columns:repeat(3,63mm);grid-auto-rows:38mm;column-gap:3mm;row-gap:0mm;width:195mm;}
-  .cell{border:.4pt solid #d0d0d0;border-radius:4pt;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3mm 5mm;page-break-inside:avoid;break-inside:avoid;}
-  .dish{color:#e91e8c;font-weight:700;font-size:16pt;text-align:center;line-height:1.25;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .line{width:80%;height:1pt;background:#e91e8c;margin:2.5mm 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .logo{width:65%;max-width:42mm;height:8mm;object-fit:contain;transform:scaleY(1.5);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .cell{border:.4pt solid #d0d0d0;border-radius:4pt;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2mm 4mm;page-break-inside:avoid;break-inside:avoid;}
+  .dish{color:#e91e8c;font-weight:700;font-size:14pt;text-align:center;line-height:1.2;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .line{width:80%;height:.75pt;background:#e91e8c;margin:1.5mm 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .allergens{font-size:7.5pt;text-align:center;color:#333;margin:0 0 1mm 0;word-break:break-word;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .logo{width:65%;max-width:38mm;height:auto;object-fit:contain;transform:scaleY(1.5);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 </style></head><body>
 <div class="grid">${rows}</div>
 <script>window.onload=function(){window.print();};<\/script>
@@ -71,11 +75,13 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
         </div>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'6px', width:'100%' }}>
           {expandedLabels.map((item, idx) => (
-            <div key={idx} style={{ border:'0.5px solid #d0d0d0', borderRadius:'5px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'12px 16px', minHeight:'100px', backgroundColor:'#fff' }}>
-              <div style={{ color:'#e91e8c', fontWeight:700, fontSize:'20px', textAlign:'center', lineHeight:1.25, width:'100%' }}>{item.dishName}</div>
+            <div key={idx} style={{ border:'0.5px solid #d0d0d0', borderRadius:'5px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'10px 14px', minHeight:'100px', backgroundColor:'#fff' }}>
+              <div style={{ color:'#e91e8c', fontWeight:700, fontSize:'18px', textAlign:'center', lineHeight:1.2, width:'100%' }}>{item.dishName}</div>
               <div style={{ width:'80%', height:'1.5px', backgroundColor:'#e91e8c', margin:'6px 0' }} />
-              (item.allergens ? <div style={{fontSize:'11px',textAlign:'center',color:'#444',marginBottom:'4px',wordBreak:'break-word',width:'100%'}}>{item.allergens}</div> : null)}
-              {true && <img src={BB_LOGO} alt="BELLABONA" style={{ width:'65%', maxWidth:'140px', height:'auto', objectFit:'contain', transform:'scaleY(1.5)', transformOrigin:'center' }} />
+              {item.allergens && (
+                <div style={{ fontSize:'11px', textAlign:'center', color:'#444', marginBottom:'4px', wordBreak:'break-word', width:'100%' }}>{item.allergens}</div>
+              )}
+              <img src={BB_LOGO} alt="BELLABONA" style={{ width:'65%', maxWidth:'140px', height:'auto', objectFit:'contain', transform:'scaleY(1.5)', transformOrigin:'center' }} />
             </div>
           ))}
         </div>
@@ -88,7 +94,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-6">
         <div className="flex items-center space-x-2 mb-6">
           <div className="bg-brand-green/10 p-2 rounded-lg"><Utensils className="w-5 h-5 text-brand-green" /></div>
-          <div><h3 className="font-semibold text-gray-900">Manual Label Entry</h3><p className="text-xs text-gray-500">Enter dish name and quantity</p></div>
+          <div><h3 className="font-semibold text-gray-900">Manual Label Entry</h3><p className="text-xs text-gray-500">Enter dish name, allergens and quantity</p></div>
         </div>
         <form onSubmit={handleAddItem} className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 space-y-4">
           <div>
@@ -97,7 +103,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
           </div>
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Allergens</label>
-            <input type="text" placeholder="e.g. Dairy, Nuts" value={current.allergens} onChange={e => setCurrent({ ...current, allergens: e.target.value })} className="w-full text-sm rounded border-gray-300 p-2 bg-white" />
+            <input type="text" placeholder="e.g. Dairy, Nuts, Gluten" value={current.allergens} onChange={e => setCurrent({ ...current, allergens: e.target.value })} className="w-full text-sm rounded border-gray-300 p-2 bg-white" />
           </div>
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Quantity</label>
@@ -114,7 +120,10 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
             <div className="max-h-60 overflow-y-auto divide-y divide-gray-200">
               {items.map((item, idx) => (
                 <div key={idx} className="p-3 flex items-center justify-between hover:bg-gray-50 text-sm">
-                  <div><div className="font-bold text-gray-900">{item.dishName}</div><div className="text-xs text-gray-500">{item.allergens && <span>{item.allergens} · </span>}Qty: {item.quantity}</div></div>
+                  <div>
+                    <div className="font-bold text-gray-900">{item.dishName}</div>
+                    <div className="text-xs text-gray-500">{item.allergens && <span>{item.allergens} · </span>}Qty: {item.quantity}</div>
+                  </div>
                   <button onClick={() => handleRemove(idx)} className="text-red-500 hover:text-red-700 p-1.5 rounded"><Trash2 className="w-4 h-4" /></button>
                 </div>
               ))}
