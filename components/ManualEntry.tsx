@@ -36,10 +36,10 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
     win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Labels</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
-  @page{size:A4 portrait;margin-top:15.5mm;margin-left:7mm;margin-right:8mm;margin-bottom:5mm;}
+  @page{size:A4 portrait;margin-top:15.5mm;margin-left:7mm;margin-right:6.5mm;margin-bottom:5mm;}
   body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
-  .grid{display:grid;grid-template-columns:repeat(3,63mm);grid-auto-rows:38mm;column-gap:3mm;row-gap:0mm;width:195mm;}
-  .cell{border:.4pt solid #d0d0d0;border-radius:4pt;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2mm 4mm;page-break-inside:avoid;break-inside:avoid;}
+  .grid{display:grid;grid-template-columns:repeat(3,63.5mm);grid-auto-rows:38.1mm;column-gap:3mm;row-gap:0mm;width:196.5mm;}
+  .cell{border:.4pt solid #d0d0d0;border-radius:1.5mm;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2mm 4mm;page-break-inside:avoid;break-inside:avoid;}
   .dish{color:#e91e8c;font-weight:700;font-size:14pt;text-align:center;line-height:1.2;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .line{width:80%;height:.75pt;background:#e91e8c;margin:1.5mm 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .allergens{font-size:7.5pt;text-align:center;color:#333;margin:0 0 1mm 0;word-break:break-word;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
