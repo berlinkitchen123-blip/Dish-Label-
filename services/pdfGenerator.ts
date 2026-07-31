@@ -15,9 +15,9 @@ const createPDFDoc = (data: LabelData[]): jsPDF => {
   const rows = 7;
   const itemsPerPage = columns * rows;
   
-  const boxWidth = 63; 
-  const boxHeight = 38; 
-  const cornerRadius = 2; 
+  const boxWidth = 63.5; 
+  const boxHeight = 38.1; 
+  const cornerRadius = 1.5; 
   
   const horizontalGap = 3;
   const verticalGap = 0; 
