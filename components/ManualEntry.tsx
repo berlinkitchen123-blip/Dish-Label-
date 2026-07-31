@@ -36,9 +36,9 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
     win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Labels</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
-  @page{size:A4 portrait;margin:8mm;}
+  @page{size:A4 portrait;margin-top:15.5mm;margin-left:7mm;margin-right:8mm;margin-bottom:5mm;}
   body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:40mm;gap:2mm;width:100%;}
+  .grid{display:grid;grid-template-columns:repeat(3,63mm);grid-auto-rows:38mm;column-gap:3mm;row-gap:0mm;width:195mm;}
   .cell{border:.4pt solid #d0d0d0;border-radius:4pt;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2mm 4mm;page-break-inside:avoid;break-inside:avoid;}
   .dish{color:#e91e8c;font-weight:700;font-size:14pt;text-align:center;line-height:1.2;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .line{width:80%;height:.75pt;background:#e91e8c;margin:1.5mm 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
@@ -75,7 +75,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
         </div>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'6px', width:'100%' }}>
           {expandedLabels.map((item, idx) => (
-            <div key={idx} style={{ border:'0.5px solid #d0d0d0', borderRadius:'5px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',  padding:'12px 16px', minHeight:'110px', backgroundColor:'#fff' }}>
+            <div key={idx} style={{ border:'0.5px solid #d0d0d0', borderRadius:'5px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',  padding:'10px 14px', minHeight:'100px', backgroundColor:'#fff' }}>
               <div style={{ color:'#e91e8c', fontWeight:700, fontSize:'18px', textAlign:'center', lineHeight:1.2, width:'100%' }}>{item.dishName}</div>
               <div style={{ width:'80%', height:'1.5px', backgroundColor:'#e91e8c', margin:'6px 0' }} />
               {item.allergens && (
