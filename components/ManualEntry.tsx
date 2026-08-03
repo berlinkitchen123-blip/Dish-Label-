@@ -37,9 +37,9 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onDataLoaded }) => {
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
   @page{size:A4 portrait;margin:0;}
-  body{font-family:Arial,Helvetica,sans-serif;background:#fff;padding:15.1mm 5.4mm 15.2mm 8mm;}
+  body{font-family:Arial,Helvetica,sans-serif;background:#fff;padding:15.1mm 5.4mm 15.2mm 7.9mm;}
   .grid{display:grid;grid-template-columns:repeat(3,63.5mm);grid-auto-rows:38.1mm;column-gap:2.82mm;row-gap:0;width:196.14mm;}
-  .cell{border:.4pt solid #d0d0d0;border-radius:1.5mm;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2mm 4mm;page-break-inside:avoid;break-inside:avoid;}
+  .cell{border:.4pt solid #d0d0d0;border-radius:3mm;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2mm 4mm;page-break-inside:avoid;break-inside:avoid;}
   .dish{color:#e91e8c;font-weight:700;font-size:14pt;text-align:center;line-height:1.2;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .line{width:80%;height:.75pt;background:#e91e8c;margin:1.5mm 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .allergens{font-size:7.5pt;text-align:center;color:#333;margin:0 0 1mm 0;word-break:break-word;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
