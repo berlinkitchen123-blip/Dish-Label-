@@ -22,7 +22,7 @@ const createPDFDoc = (data: LabelData[]): jsPDF => {
   const horizontalGap = 2.82;
   const verticalGap = 0; 
   
-  const startX = 9.0;  
+  const startX = 8.0;  
   const startY = 15.1; 
 
   // Expand data based on quantity
