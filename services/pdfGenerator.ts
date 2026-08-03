@@ -19,11 +19,11 @@ const createPDFDoc = (data: LabelData[]): jsPDF => {
   const boxHeight = 38.1; 
   const cornerRadius = 1.5; 
   
-  const horizontalGap = 3;
+  const horizontalGap = 2.82;
   const verticalGap = 0; 
   
-  const startX = 7;  
-  const startY = 15.5; 
+  const startX = 9.0;  
+  const startY = 15.1; 
 
   // Expand data based on quantity
   const expandedData: LabelData[] = [];
